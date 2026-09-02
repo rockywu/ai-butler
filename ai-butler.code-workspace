@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "AI Butler",
+      "path": "."
+    },
+    {
+      "name": "@vben/web-antd",
+      "path": "apps/web-antd"
+    },
+    {
+      "name": "@vben/backend-mock",
+      "path": "apps/backend-mock"
+    },
+    {
+      "name": "@vben/playground",
+      "path": "playground"
+    }
+  ]
+}
