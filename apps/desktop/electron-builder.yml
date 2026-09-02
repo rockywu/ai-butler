@@ -1,0 +1,34 @@
+appId: com.aibutler.desktop
+productName: AI Butler
+asar: true
+npmRebuild: false
+
+directories:
+  output: release
+
+files:
+  - out/**/*
+  - '!out/renderer/**'
+  - '!out/renderer-placeholder/**'
+  - package.json
+
+extraResources:
+  - from: ../web-antd/dist/desktop
+    to: renderer
+
+mac:
+  artifactName: AI-Butler-${version}-${arch}.${ext}
+  category: public.app-category.productivity
+  target:
+    - dmg
+    - zip
+
+win:
+  artifactName: AI-Butler-Setup-${version}-${arch}.${ext}
+  target:
+    - nsis
+
+nsis:
+  allowToChangeInstallationDirectory: true
+  oneClick: false
+  perMachine: false

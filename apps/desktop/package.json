@@ -1,0 +1,26 @@
+{
+  "name": "@ai-butler/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "build": "electron-vite build",
+    "dev": "wait-on http://localhost:5666 && cross-env AI_BUTLER_RENDERER_URL=http://localhost:5666 electron-vite dev",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:win": "electron-builder --win --x64 --publish never",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@ai-butler/platform-api": "workspace:*",
+    "@types/node": "catalog:",
+    "@vben/tsconfig": "workspace:*",
+    "cross-env": "catalog:",
+    "electron": "catalog:",
+    "electron-builder": "catalog:",
+    "electron-vite": "catalog:",
+    "typescript": "catalog:",
+    "wait-on": "catalog:"
+  }
+}

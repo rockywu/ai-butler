@@ -7,6 +7,7 @@
   "scripts": {
     "build": "pnpm vite build --mode production",
     "build:analyze": "pnpm vite build --mode analyze",
+    "build:desktop": "pnpm vite build --mode desktop --outDir dist/desktop",
     "dev": "pnpm vite --mode development",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit --skipLibCheck"
@@ -15,6 +16,7 @@
     "#/*": "./src/*"
   },
   "dependencies": {
+    "@ai-butler/platform-api": "workspace:*",
     "@vben/access": "workspace:*",
     "@vben/common-ui": "workspace:*",
     "@vben/constants": "workspace:*",

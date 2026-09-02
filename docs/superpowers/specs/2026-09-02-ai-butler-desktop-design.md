@@ -5,7 +5,7 @@
 - 日期：2026-09-02
 - 状态：设计已确认，等待书面规格审查
 - 前置文档：[骨架设计](./骨架设计.md)
-- 目标平台：Web、Windows x64、macOS x64/arm64、Linux x64 AppImage
+- 目标平台：Web、Windows x64、macOS x64/arm64
 
 ## 2. 背景与目标
 
@@ -19,7 +19,7 @@ AI Butler 当前基于 Vue 3、Vite、Vben Admin 和 Ant Design Vue 开发。业
 - 保留需要的 Vben 基础设施，同时替换默认视觉外壳；
 - 通过 `platformApi` 隔离浏览器与 Electron 能力；
 - 建立明确的 Electron 安全边界；
-- 支持三端可重复构建、签名、灰度和更新；
+- 支持 Windows 与 macOS 可重复构建、签名、灰度和更新；
 - 形成可单独测试的模块边界。
 
 ## 3. 非目标
@@ -31,7 +31,7 @@ AI Butler 当前基于 Vue 3、Vite、Vben Admin 和 Ant Design Vue 开发。业
 - Electron 主窗口直接加载线上 Web；
 - Renderer 直接使用 Node.js、Electron 或通用 IPC；
 - 将 Vben 拆成若干孤立 npm 组件重新组装；
-- Windows arm64、Linux arm64、deb 或 rpm 安装包；
+- Windows arm64 和 Linux 桌面安装包；Linux 支持推迟到后续版本；
 - 自动降级到旧版本；
 - 浏览器 SSO（首版明确不支持，仅保留未来扩展边界）。
 
@@ -162,7 +162,7 @@ apps/desktop/release/
 
 ### 7.2 退出与恢复
 
-- Windows/Linux 关闭最后一个业务窗口时隐藏到托盘；
+- Windows 关闭最后一个业务窗口时隐藏到托盘；
 - macOS 关闭窗口后保持应用运行；
 - 托盘“退出”和系统退出设置 `isQuitting`，然后销毁窗口；
 - 系统关机流程不得被隐藏到托盘逻辑阻止；
@@ -339,9 +339,7 @@ Renderer 不得传入任意菜单结构。动态状态通过受控模型更新�
 开机启动默认关闭，由用户主动开启。
 
 - Windows/macOS 使用系统登录项；
-- Linux AppImage 使用用户级 autostart desktop entry；
 - 修改后重新读取系统实际状态；
-- AppImage 路径变化时修复启动项；
 - 卸载或禁用时清理启动项。
 
 设备级偏好存放在主进程配置存储中，不进入 Pinia 持久化。
@@ -396,8 +394,6 @@ ai-butler://auth/callback?code=<code>
 
 `secureStorage`不是通用键值接口。首版只提供认证模块所需的窄接口：保存 refresh token、刷新 access token、清除凭证和查询凭证状态。
 
-Linux 必须检查 `safeStorage.getSelectedStorageBackend()`。若只有 `basic_text`，不得持久化 refresh token，应用退化为当前会话有效，并提示系统密钥环不可用。
-
 ### 13.3 设置与迁移
 
 非敏感设备设置使用带 schema 和版本号的原子 JSON 存储，可使用 `electron-store`。窗口位置恢复前限制到当前可用屏幕。
@@ -410,7 +406,6 @@ Renderer 的 IndexedDB/localStorage 只保存非敏感 UI 数据。本地记录�
 
 - Windows x64：NSIS 和 blockmap；
 - macOS x64/arm64：DMG、ZIP 和更新元数据；
-- Linux x64：AppImage 和更新元数据。
 
 ### 14.2 更新源
 
@@ -420,7 +415,7 @@ Renderer 的 IndexedDB/localStorage 只保存非敏感 UI 数据。本地记录�
 
 1. 受保护 tag 触发构建；
 2. 上传 CDN staging 路径；
-3. 校验签名、哈希和三端冒烟测试；
+3. 校验签名、哈希和 Windows/macOS 冒烟测试；
 4. 人工审批；
 5. 将同一批产物提升到正式频道；
 6. 禁止覆盖相同版本文件。
@@ -430,7 +425,6 @@ Renderer 的 IndexedDB/localStorage 只保存非敏感 UI 数据。本地记录�
 - Windows 使用受信任代码签名证书；
 - macOS 使用 Developer ID 签名并完成 notarization；
 - 签名密钥只存在于 CI secret 或签名服务；
-- Linux 发布校验和。
 
 ### 14.4 更新体验
 
@@ -457,8 +451,6 @@ idle → checking → available → downloading → ready
 - 异常时冻结 manifest；
 - 已更新客户端通过更高补丁版本修复；
 - 不自动降级。
-
-Linux AppImage 不支持原位更新时返回明确 capability，并引导下载新版本。
 
 ## 15. 日志、Sentry 与恢复
 
@@ -549,7 +541,7 @@ Desktop Playwright Electron 测试覆盖：
 
 - `quality.yml`：PR 执行依赖检查、lint、类型检查、单元测试、Web 构建、main/preload 构建；
 - `web-e2e.yml`：PR 和主分支执行 Web E2E；
-- `desktop-smoke.yml`：主分支和发布候选执行 Windows/macOS/Linux 桌面冒烟；
+- `desktop-smoke.yml`：主分支和发布候选执行 Windows/macOS 桌面冒烟；
 - `release-desktop.yml`：受保护 tag 执行签名、公证、校验、Sentry source map 上传和 staging 发布；
 - `promote-release.yml`：人工审批后提升正式频道。
 
@@ -595,10 +587,10 @@ CI 使用 frozen lockfile 和仓库固定的 Node/pnpm 版本。PR 工作流不�
 - Renderer 无 Node.js 和 Electron 直接访问能力；
 - 所有桌面能力经过类型化 `platformApi`和白名单 IPC；
 - main/preload/Renderer 协议版本不匹配时安全失败；
-- Windows、macOS、Linux 能启动、登录、访问核心业务和正常退出；
+- Windows、macOS 能启动、登录、访问核心业务和正常退出；
 - 托盘、通知、开机启动、深链、更新按 capability 工作；
 - refresh token 不出现在 localStorage、日志和普通 IPC 返回中；
-- 三端安装包由受保护 CI 构建并按要求签名；
+- Windows 与 macOS 安装包由受保护 CI 构建并按要求签名；
 - 单元测试、Web E2E 和 Desktop smoke 满足合并门禁；
 - 新单仓库包含当前全部有效业务文件，并通过迁移校验。
 

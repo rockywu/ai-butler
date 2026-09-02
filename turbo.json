@@ -34,6 +34,10 @@
       "dependsOn": ["^build"],
       "outputs": [".nitro/**", ".output/**"]
     },
+    "@ai-butler/desktop#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["out/**"]
+    },
     "test:e2e": {},
     "dev": {
       "dependsOn": [],

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@vben/tsconfig/node.json",
+  "compilerOptions": {
+    "types": ["electron", "node"]
+  },
+  "include": ["electron-vite.config.ts", "src/**/*.ts"],
+  "exclude": ["node_modules", "out", "release"]
+}

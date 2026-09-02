@@ -1,6 +1,6 @@
 # AI Butler（阿斯系统）
 
-AI Butler 是同时面向 Web、Windows、macOS 和 Linux 的 AI 超级员工产品。
+AI Butler 是面向 Web、Windows 和 macOS 的 AI 超级员工产品。
 
 当前仓库是单一 pnpm/Turbo monorepo。Web 客户端基于 Vue 3、Vite、Vben Admin 和 Ant Design Vue；Electron 桌面端将在 `apps/desktop` 中建设，并与 Web 共用 `apps/web-antd` Renderer。
 

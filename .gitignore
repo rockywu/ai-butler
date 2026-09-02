@@ -18,6 +18,8 @@ coverage
 .turbo
 .temp
 dev-dist
+apps/desktop/out/
+apps/desktop/release/
 .stylelintcache
 yarn.lock
 package-lock.json
