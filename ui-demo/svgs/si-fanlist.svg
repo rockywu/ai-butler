@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" id="si-fanlist" role="img" aria-label="si-fanlist">
+  <defs>
+<linearGradient id="si-blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#74ECFF"/><stop offset=".5" stop-color="#4D91FF"/><stop offset="1" stop-color="#6554E9"/></linearGradient>
+<linearGradient id="si-purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E09BFF"/><stop offset=".48" stop-color="#8D63FF"/><stop offset="1" stop-color="#4F64EE"/></linearGradient>
+<linearGradient id="si-mint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#83F4CF"/><stop offset=".52" stop-color="#34C8D8"/><stop offset="1" stop-color="#4E72F4"/></linearGradient>
+<linearGradient id="si-warm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE276"/><stop offset=".5" stop-color="#FF8F71"/><stop offset="1" stop-color="#AF62F2"/></linearGradient>
+<linearGradient id="si-glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEBFF" stop-opacity=".7"/></linearGradient>
+<filter id="si-shadow" x="-45%" y="-45%" width="190%" height="200%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#4065C7" flood-opacity=".23"/></filter>
+</defs>
+  <g>
+    <g filter="url(#si-shadow)"><rect x="8" y="11" width="48" height="43" rx="9" fill="url(#si-glass)" stroke="#C4D9FF"/><circle cx="22" cy="26" r="7" fill="url(#si-purple)"/><path d="M12 43c1-7 5-11 10-11s9 4 10 11" fill="url(#si-blue)"/><path d="M36 22h13M36 29h10M36 39h13M36 46h8" stroke="#6E9AF1" stroke-width="2.8" stroke-linecap="round"/><circle cx="53" cy="47" r="7" fill="url(#si-mint)"/><path d="M53 43v8M49 47h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+  </g>
+</svg>

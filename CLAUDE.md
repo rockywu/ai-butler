@@ -32,7 +32,10 @@
 ```bash
 pnpm install            # 安装依赖（postinstall 会跑各包的 stub）
 pnpm dev                # 交互式选择要启动的应用（turbo-run）
-pnpm dev:antd           # 直接启动主应用 web-antd，端口 5666
+pnpm dev:mock           # 独立启动 Nitro Mock API，端口 5320
+pnpm dev:antd           # concurrently 启动 Mock + 主应用 web-antd（端口 5666）
+pnpm dev:web            # 只启动 web-antd（需已有 Mock 或真实后端）
+pnpm dev:desktop        # concurrently 启动 Mock + Web + Electron
 pnpm dev:play           # 启动 playground
 
 pnpm build              # 构建全部（turbo，NODE_OPTIONS=--max-old-space-size=8192）
@@ -41,7 +44,7 @@ pnpm preview            # 构建后预览
 pnpm clean              # 清理产物；pnpm reinstall 会连 lockfile 一起重装
 ```
 
-`dev:antd` 会**自动拉起 Nitro mock 服务**（端口 5320），因为 `apps/web-antd/.env.development` 里 `VITE_NITRO_MOCK=true`，`@vben/vite-config` 据此注入 `viteNitroMockPlugin`。无需另开终端。若要单独跑：`pnpm --filter @vben/backend-mock start`。
+Mock 是**独立进程服务**（`apps/backend-mock`），默认端口 5320。`VITE_NITRO_MOCK=false`，不再由 Vite 插件内嵌拉起。`dev:antd` / `dev:desktop` 通过 `concurrently` 一并启动 Mock；也可单独 `pnpm dev:mock`。Web 仍经 Vite 将 `/api` 代理到 `localhost:5320`。Desktop 打包应用需加 `--api-url=http://localhost:5320/api` 直连 Mock 以验证登录。
 
 ### 检查与测试
 
@@ -188,7 +191,7 @@ apps/ + playground/       可运行应用
 
 ### 环境变量
 
-均在 `apps/web-antd/`：`.env`（`VITE_APP_TITLE`、`VITE_APP_NAMESPACE`、`VITE_APP_STORE_SECURE_KEY`）、`.env.development`（`VITE_PORT=5666`、`VITE_GLOB_API_URL=/api`、`VITE_NITRO_MOCK`、`VITE_DEVTOOLS`、`VITE_INJECT_APP_LOADING`）、`.env.production`（`VITE_ROUTER_HISTORY=hash`、`VITE_COMPRESS`、`VITE_PWA`、`VITE_ARCHIVER`）、`.env.analyze`（`VITE_VISUALIZER`）。
+均在 `apps/web-antd/`：`.env`（`VITE_APP_TITLE`、`VITE_APP_NAMESPACE`、`VITE_APP_STORE_SECURE_KEY`）、`.env.development`（`VITE_PORT=5666`、`VITE_GLOB_API_URL=/api`、`VITE_NITRO_MOCK=false`、`VITE_DEVTOOLS`、`VITE_INJECT_APP_LOADING`）、`.env.production`（`VITE_ROUTER_HISTORY=hash`、`VITE_COMPRESS`、`VITE_PWA`、`VITE_ARCHIVER`）、`.env.analyze`（`VITE_VISUALIZER`）。
 
 接真实后端：改 `VITE_GLOB_API_URL`，删掉 `vite.config.ts` 里的 `/api` proxy，并保证后端响应符合 `{ code, data, message }` + `successCode=0`（否则改 `request.ts` 的 `defaultResponseInterceptor`）。
 

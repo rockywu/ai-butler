@@ -6,8 +6,9 @@
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
-    "build": "electron-vite build",
-    "dev": "wait-on http://localhost:5666 && cross-env AI_BUTLER_RENDERER_URL=http://localhost:5666 electron-vite dev",
+    "build": "electron-vite build && node ./scripts/emit-preload-cjs.mjs",
+    "dev": "node ./scripts/emit-preload-cjs.mjs && wait-on http://localhost:5666 && cross-env AI_BUTLER_RENDERER_URL=http://localhost:5666 electron-vite dev",
+    "emit:preload": "node ./scripts/emit-preload-cjs.mjs",
     "dist:mac": "electron-builder --mac --publish never",
     "dist:win": "electron-builder --win --x64 --publish never",
     "typecheck": "tsc --noEmit"

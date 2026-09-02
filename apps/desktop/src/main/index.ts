@@ -1,5 +1,9 @@
 import type { PlatformResult, RuntimeInfo } from '@ai-butler/platform-api';
 
+import type { DesktopBootstrapConfig } from '../shared/channels';
+
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -7,11 +11,37 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PLATFORM_PROTOCOL_VERSION } from '@ai-butler/platform-api';
 import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
 
-import { RUNTIME_GET_INFO_CHANNEL } from '../shared/channels';
+import { injectApiUrlInterceptorIntoHtml } from '../shared/api-url-interceptor';
+import {
+  BOOTSTRAP_GET_CONFIG_CHANNEL,
+  RUNTIME_GET_INFO_CHANNEL,
+} from '../shared/channels';
+import { parseApiUrlFromArgv } from './parse-api-url';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const developmentUrl =
   process.env.AI_BUTLER_RENDERER_URL || 'http://localhost:5666';
+/**
+ * 打包应用没有 Vite `/api` 代理。未传 `--api-url` 时默认直连本地独立 Mock，
+ * 便于 macOS 本地点登录验证；正式环境用 `--api-url=https://...` 覆盖。
+ */
+const bootstrapConfig: DesktopBootstrapConfig = {
+  apiURL:
+    parseApiUrlFromArgv(process.argv) ??
+    (app.isPackaged ? 'http://localhost:5320/api' : null),
+};
+
+function resolvePreloadPath(): string {
+  // Sandbox preload 必须是 CJS；兼容本地历史产物的 .mjs / .js。
+  const candidates = ['index.cjs', 'index.js', 'index.mjs'];
+  for (const fileName of candidates) {
+    const filePath = resolve(currentDirectory, '../preload', fileName);
+    if (existsSync(filePath)) {
+      return filePath;
+    }
+  }
+  return resolve(currentDirectory, '../preload/index.cjs');
+}
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -36,6 +66,12 @@ function isTrustedSender(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+function registerBootstrapHandler(): void {
+  ipcMain.on(BOOTSTRAP_GET_CONFIG_CHANNEL, (event) => {
+    event.returnValue = bootstrapConfig;
+  });
 }
 
 function registerRuntimeHandler(): void {
@@ -80,7 +116,7 @@ function registerRuntimeHandler(): void {
 function registerRendererProtocol(): void {
   const rendererRoot = resolve(process.resourcesPath, 'renderer');
 
-  protocol.handle('app', (request) => {
+  protocol.handle('app', async (request) => {
     const requestUrl = new URL(request.url);
     if (requestUrl.host !== 'bundle') {
       return new Response('Not found', { status: 404 });
@@ -105,6 +141,22 @@ function registerRendererProtocol(): void {
       return new Response('Forbidden', { status: 403 });
     }
 
+    // 打包页没有 Vite 代理；带 --api-url 时在 index.html 主世界注入覆盖脚本。
+    if (
+      bootstrapConfig.apiURL &&
+      (requestedPath === 'index.html' || requestedPath === '')
+    ) {
+      const html = await readFile(filePath, 'utf8');
+      return new Response(
+        injectApiUrlInterceptorIntoHtml(html, bootstrapConfig.apiURL),
+        {
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+          },
+        },
+      );
+    }
+
     return net.fetch(pathToFileURL(filePath).toString());
   });
 }
@@ -120,7 +172,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      preload: resolve(currentDirectory, '../preload/index.mjs'),
+      preload: resolvePreloadPath(),
       sandbox: true,
       webSecurity: true,
     },
@@ -169,6 +221,7 @@ if (hasSingleInstanceLock) {
     if (app.isPackaged) {
       registerRendererProtocol();
     }
+    registerBootstrapHandler();
     registerRuntimeHandler();
     await showMainWindow();
   });

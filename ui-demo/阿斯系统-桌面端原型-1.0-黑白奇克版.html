@@ -446,6 +446,227 @@ body.anno-off .anno{display:none;}
 .data-table input[type="checkbox"]{cursor:pointer;accent-color:var(--primary);}
 .row-acts{display:flex;gap:8px;flex-wrap:wrap;}
 
+/* ============ Black & White Chic UI · 视觉覆盖层 ============ */
+:root{
+  --primary:#0A0A0A;
+  --primary-hover:#242424;
+  --primary-soft:#F1F1EF;
+  --bg:#F4F4F1;
+  --surface:#FFFFFF;
+  --surface-2:#F7F7F4;
+  --border:#DDDCD6;
+  --text:#0A0A0A;
+  --text-sub:#64645F;
+  --text-light:#9A9992;
+  --radius-sm:8px;
+  --radius-md:11px;
+  --radius-lg:15px;
+  --shadow-sm:0 1px 0 rgba(10,10,10,.04),0 5px 16px rgba(10,10,10,.035);
+  --shadow-md:0 10px 28px rgba(10,10,10,.09);
+  --transition:all .18s cubic-bezier(.2,.75,.25,1);
+}
+html,body{font-family:"SF Pro Display","SF Pro Text","PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:#F4F4F1;letter-spacing:.005em;}
+button,input,textarea,select{font-family:inherit;}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+::selection{background:#0A0A0A;color:#fff;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:#C5C4BD;border:2px solid transparent;background-clip:padding-box;border-radius:999px;}
+::-webkit-scrollbar-thumb:hover{background:#92918B;border:2px solid transparent;background-clip:padding-box;}
+
+/* 原型展示外框 */
+.demo{padding:20px;background-color:#E9E9E5;background-image:radial-gradient(#B9B8B1 1px,transparent 1px);background-size:18px 18px;}
+.demo-inner{max-width:1380px;gap:14px;}
+.demo-header,.demo-controls{background:rgba(255,255,255,.92);border:1px solid rgba(10,10,10,.12);box-shadow:0 8px 30px rgba(10,10,10,.08);backdrop-filter:blur(16px);}
+.demo-header{padding:11px 14px 11px 18px;border-radius:16px;}
+.demo-title{font-size:14px;font-weight:750;letter-spacing:-.01em;}
+.demo-tabs{background:#EFEFEB;border:1px solid #E1E0DA;border-radius:10px;}
+.demo-tab{border-radius:7px;color:#74736D;}
+.demo-tab.active{background:#0A0A0A;color:#fff;box-shadow:none;}
+.anno-toggle{border-color:#CFCEC7;color:#5B5B56;}
+.anno-toggle.on{color:#0A0A0A;border-color:#0A0A0A;background:#F3F3EF;}
+.dc-hint{background:#0A0A0A;color:#fff;border-radius:8px;}
+
+/* 桌面窗口 */
+.window-mock{border:1px solid rgba(10,10,10,.17);border-radius:20px;box-shadow:0 30px 80px rgba(10,10,10,.22),0 3px 8px rgba(10,10,10,.08);}
+.titlebar{background:#FBFBF9;border-bottom-color:#E1E0DA;padding:10px 13px;}
+.win-dot{width:11px;height:11px;border-radius:50%;border:1px solid rgba(10,10,10,.18);}
+.win-dot.close{background:#111}.win-dot.min{background:#888}.win-dot.max{background:#D6D5CF}
+.tb-pill{background:#fff;border-color:#D9D8D1;}
+.tb-pill.tb-points{color:#0A0A0A;border-color:#0A0A0A;background:#fff;}
+.tb-pill.tb-points:hover{background:#0A0A0A;color:#fff;}
+.tb-btn{border-color:#D9D8D1;color:#191919;background:#fff;}
+.tb-btn:hover{background:#0A0A0A;color:#fff;border-color:#0A0A0A;}
+
+/* 登录 */
+.login-wrap{background-color:#F4F4F1;background-image:linear-gradient(rgba(10,10,10,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(10,10,10,.035) 1px,transparent 1px);background-size:28px 28px;}
+.login-card{max-width:400px;}
+.login-brand{margin-bottom:22px;}
+.login-brand-icon,.web-brand-icon{position:relative;background:#0A0A0A;border:1px solid #0A0A0A;border-radius:8px;box-shadow:5px 5px 0 #D8D7D0;letter-spacing:-.04em;}
+.login-brand-icon{width:45px;height:45px;}
+.login-brand-name{font-size:21px;letter-spacing:-.03em;}
+.login-card-box{border-color:#D1D0C9;border-radius:18px;box-shadow:0 18px 50px rgba(10,10,10,.09);padding:26px 24px;}
+.login-tabs{background:#F0F0EC;border:1px solid #E2E1DB;}
+.login-tab.active{background:#0A0A0A;color:#fff;box-shadow:none;}
+.input-icon-row{border-color:#D3D2CB;background:#FBFBF9;}
+.input-icon-row:focus-within{border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(10,10,10,.08);background:#fff;}
+.input-icon-row .ii{filter:grayscale(1) contrast(1.35);}
+.btn-code{border-color:#0A0A0A;color:#0A0A0A;}
+.btn-code:hover{background:#0A0A0A;color:#fff;}
+.btn-login{background:#0A0A0A;border:1px solid #0A0A0A;border-radius:9px;box-shadow:4px 4px 0 #D6D5CF;}
+.btn-login:hover{background:#242424;transform:translate(-1px,-1px);box-shadow:5px 5px 0 #CECDC6;}
+.login-device-tip{background:#F0F0EC;border:1px dashed #C9C8C1;color:#5B5B56;}
+
+/* 左侧导航：改为明亮黑白体系 */
+.web-sidebar{width:188px;background:#F8F8F5;color:#55554F;border-right:1px solid #DCDAD4;}
+.web-brand{color:#0A0A0A;border-bottom:1px solid #E0DFD8;padding:14px 15px;}
+.web-brand small{color:#8A8983;}
+.web-brand-icon{color:#fff;box-shadow:3px 3px 0 #D5D4CD;}
+.web-nav{padding:10px 0;}
+.web-nav-item{color:#5D5C56;margin:3px 10px;padding:9px 11px;border:1px solid transparent;border-radius:9px;}
+.web-nav-item:hover{background:#ECECE7;color:#0A0A0A;border-color:#DDDCD5;}
+.web-nav-item.active{background:#0A0A0A;color:#fff;border-color:#0A0A0A;box-shadow:3px 3px 0 #C9C8C1;}
+.web-nav-item .ni{filter:grayscale(1) contrast(1.4);font-size:14px;}
+.web-nav-group{color:#8A8983;letter-spacing:.065em;text-transform:uppercase;}
+.web-nav-group:hover,.web-nav-group.has-active{color:#0A0A0A;}
+.web-nav-sub{padding-left:17px;}
+.web-body{background:#F3F3EF;}
+.web-topbar{background:rgba(255,255,255,.92);border-bottom-color:#DCDAD4;padding:11px 18px;backdrop-filter:blur(12px);}
+.web-topbar h2{font-size:16px;letter-spacing:-.02em;}
+.web-main{padding:16px;gap:16px;}
+
+/* 通用组件 */
+.card,.stat-card,.quick-card,.gallery-card,.avatar-card{border-color:#DCDAD4;box-shadow:var(--shadow-sm);}
+.card{border-radius:15px;}
+.card-header h3,.section-title,.quick-title,.zone-title,.acq-title,.task-title{letter-spacing:-.012em;}
+.section-title{border-left:0;padding-left:0;margin-top:4px;}
+.section-title::before{content:"";width:12px;height:12px;flex:0 0 12px;background:conic-gradient(#0A0A0A 0 25%,#fff 0 50%,#0A0A0A 0 75%,#fff 0);border:1px solid #0A0A0A;}
+.btn{border-radius:9px;}
+.btn-primary{background:#0A0A0A;border-color:#0A0A0A;color:#fff;box-shadow:2px 2px 0 #C9C8C1;}
+.btn-primary:hover{background:#242424;transform:translate(-1px,-1px);box-shadow:3px 3px 0 #BEBDB6;}
+.btn-secondary{background:#fff;border-color:#CFCFC8;color:#191919;}
+.btn-secondary:hover{background:#EFEFEB;border-color:#0A0A0A;}
+.btn-danger{box-shadow:none;}
+.form-input,.form-select,.form-textarea,.chat-ta{border-color:#D0CFC8;background:#FBFBF9;border-radius:8px;}
+.form-input:focus,.form-select:focus,.form-textarea:focus,.chat-ta:focus{border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(10,10,10,.07);background:#fff;}
+.data-table th{background:#F0F0EC;color:#55554F;font-weight:650;}
+.data-table tr:hover td{background:#F7F7F3;}
+.tbl-link{color:#0A0A0A;font-weight:650;text-underline-offset:2px;}
+.ava{background:#0A0A0A;border:1px solid #0A0A0A;box-shadow:2px 2px 0 #CFCFC8;}
+.progress-bar{background:#E4E3DC;}
+.progress-fill{background:#0A0A0A;}
+
+/* 工作台 */
+.mini-hero{color:#15213B;background:linear-gradient(118deg,#F9FAFF 0%,#EEF3FF 50%,#F7EFFF 100%);border:1px solid #D9DFF1;border-radius:18px;box-shadow:0 12px 34px rgba(50,65,115,.09);padding:25px 23px;min-height:112px;display:flex;align-items:center;}
+.mini-hero::before{background:radial-gradient(circle at 83% 16%,rgba(64,208,255,.34),transparent 19%),radial-gradient(circle at 92% 82%,rgba(132,92,246,.28),transparent 25%),radial-gradient(circle at 69% 112%,rgba(255,92,168,.18),transparent 30%);}
+.mini-hero::after{content:"AS";position:absolute;right:26px;bottom:-25px;font-size:104px;line-height:1;font-weight:900;letter-spacing:-.11em;color:rgba(45,64,124,.07);}
+.hero-kicker{display:inline-flex;margin-bottom:8px;padding:3px 8px;border-radius:999px;background:linear-gradient(90deg,#5B6CFF,#9B5CFF,#19BEE8);color:#fff;font-size:9.5px;font-weight:750;letter-spacing:.14em;box-shadow:0 5px 16px rgba(91,108,255,.22);}
+.mini-hero h2{font-size:22px;letter-spacing:-.035em;margin-bottom:7px;background:linear-gradient(92deg,#17213C 0%,#4F56BB 50%,#8B4FB5 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.mini-hero p{color:#59637A;opacity:1;}
+.overview-title{margin-top:1px;}
+.stat-card{position:relative;overflow:hidden;border-radius:13px;}
+.stat-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--stat-accent,#6675F5);}
+.stat-card::after{content:"";position:absolute;right:-11px;top:-13px;width:45px;height:45px;border-radius:50%;background:var(--stat-soft,rgba(102,117,245,.1));}
+.stat-card:nth-child(1){--stat-accent:#6675F5;--stat-soft:rgba(102,117,245,.12)}
+.stat-card:nth-child(2){--stat-accent:#16B9D4;--stat-soft:rgba(22,185,212,.12)}
+.stat-card:nth-child(3){--stat-accent:#9B60E8;--stat-soft:rgba(155,96,232,.12)}
+.stat-card:nth-child(4){--stat-accent:#FF8C5A;--stat-soft:rgba(255,140,90,.13)}
+.stat-value{font-size:24px;letter-spacing:-.045em;}
+.stat-delta{color:#5F5E59;}
+.quick-card{border-radius:14px;}
+.quick-card:hover{border-color:#0A0A0A;box-shadow:5px 5px 0 #D3D2CB;transform:translate(-2px,-2px);}
+.quick-ico,.zone-ico,.acq-ico,.task-ico{background-color:#0A0A0A!important;background-image:linear-gradient(135deg,#0A0A0A 0 72%,#343434 72%)!important;color:#fff;border:1px solid #0A0A0A;box-shadow:3px 3px 0 #D0CFC8;filter:grayscale(1) contrast(1.25);border-radius:7px;}
+.quick-ico{border-radius:9px;}
+.feed-dot{border-radius:2px!important;filter:grayscale(1);}
+
+/* 获客功能：深色质感底座 + 彩色光感图标 */
+[data-page="smart"] .section-title::before{border:0;border-radius:4px;background:linear-gradient(135deg,#5D6CFF 0 36%,#B553FF 36% 68%,#21CAE5 68%);box-shadow:0 3px 10px rgba(91,108,255,.28);}
+.zone-card,.acq-card,.task-card{position:relative;overflow:hidden;border-color:#DDE1EC;background:#fff;box-shadow:0 5px 18px rgba(25,37,72,.055);}
+.zone-card::after,.acq-card::after,.task-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--card-accent,#6375FF);opacity:.75;}
+.t-purple{--card-accent:#965DFF;--card-soft:#F5F0FF;background:linear-gradient(155deg,#fff 50%,#F7F2FF);}
+.t-orange{--card-accent:#FF8A4C;--card-soft:#FFF2EA;background:linear-gradient(155deg,#fff 50%,#FFF5EF);}
+.t-blue{--card-accent:#4F7BFF;--card-soft:#EEF3FF;background:linear-gradient(155deg,#fff 50%,#F0F5FF);}
+.t-green{--card-accent:#24BFA0;--card-soft:#EAFBF7;background:linear-gradient(155deg,#fff 50%,#EDFBF8);}
+.t-cyan{--card-accent:#13BEE5;--card-soft:#EAFBFF;background:linear-gradient(155deg,#fff 50%,#ECFAFE);}
+.t-pink{--card-accent:#F15FAD;--card-soft:#FFF0F8;background:linear-gradient(155deg,#fff 50%,#FFF2F9);}
+.zone-card:hover,.acq-card:hover,.task-card:hover{border-color:var(--card-accent,#6375FF);box-shadow:0 14px 32px rgba(40,52,100,.14);transform:translateY(-3px);}
+.zone-ico,.acq-ico,.task-ico{position:relative;color:#fff;border:1px solid rgba(255,255,255,.32);border-radius:10px;box-shadow:0 8px 20px rgba(50,66,135,.22),inset 0 1px 0 rgba(255,255,255,.35);filter:none!important;}
+.ico-purple{background-color:#6E42E9!important;background-image:linear-gradient(145deg,#D25DFF,#7654FF 55%,#4434D0)!important;}
+.ico-orange{background-color:#F07832!important;background-image:linear-gradient(145deg,#FFD04C,#FF854A 55%,#F04E88)!important;}
+.ico-blue{background-color:#3E66E8!important;background-image:linear-gradient(145deg,#4FD7FF,#5977FF 55%,#5344D9)!important;}
+.ico-green{background-color:#18A98D!important;background-image:linear-gradient(145deg,#65E6B5,#22C5A7 52%,#1288A9)!important;}
+.ico-cyan{background-color:#13A9D4!important;background-image:linear-gradient(145deg,#5CEBEE,#1BC1E3 52%,#3874E8)!important;}
+.ico-pink{background-color:#D84C9F!important;background-image:linear-gradient(145deg,#FF8ACD,#F257AD 52%,#8A4DE2)!important;}
+.platform-tab.active{background:#111A38;border-color:#111A38;box-shadow:0 5px 14px rgba(32,48,100,.2);}
+.platform-tab .p-dot{filter:none;border-radius:4px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35);}
+.platform-tab[data-platform="douyin"] .p-dot{background:linear-gradient(135deg,#28E0E8,#111827 50%,#FF4D8D)!important;}
+.platform-tab[data-platform="xiaohongshu"] .p-dot{background:linear-gradient(135deg,#FF657C,#FF2442)!important;}
+.platform-tab[data-platform="kuaishou"] .p-dot{background:linear-gradient(135deg,#FFB34D,#FF5000)!important;}
+.task-banner.ok{background:#EDFBF7;border-color:#BCEDE1;color:#176B59;}
+.task-banner.warn{background:#FFF8E8;border-color:#F3DA9A;color:#755512;}
+.alert-strip{background:linear-gradient(90deg,#F5F7FF,#FAF7FF);border-color:#DDE1F2;color:#4D566D;}
+.alert-strip .warn-ico{color:#7A60E8;filter:none;}
+.guide-link,.alert-strip a{color:#4C59C7;font-weight:650;}
+.smart-icon-defs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;}
+.web-topbar small:empty{display:none;}
+[data-page="smart"] .zone-card{min-height:116px;align-items:center;}
+[data-page="smart"] .zone-card>div:not(.zone-ico){flex:1;min-width:0;}
+[data-page="smart"] .acq-card,[data-page="smart"] .task-card{display:flex;flex-direction:column;min-height:166px;}
+[data-page="smart"] .acq-title,[data-page="smart"] .task-title{order:1;}
+[data-page="smart"] .acq-desc,[data-page="smart"] .task-desc{order:2;}
+[data-page="smart"] .zone-ico,[data-page="smart"] .acq-ico,[data-page="smart"] .task-ico{background:none!important;background-image:none!important;border:0;box-shadow:none;filter:none!important;overflow:visible;padding:0;}
+[data-page="smart"] .zone-ico{width:66px;height:66px;flex:0 0 66px;}
+[data-page="smart"] .acq-ico,[data-page="smart"] .task-ico{order:3;width:55px;height:55px;margin:auto 0 -2px auto;}
+[data-page="smart"] .zone-ico svg,[data-page="smart"] .acq-ico svg,[data-page="smart"] .task-ico svg{display:block;width:100%;height:100%;overflow:visible;}
+
+/* 聊天、数字人、视频 */
+.conv-item.active{background:#EBEBE6;box-shadow:inset 3px 0 #0A0A0A;}
+.conv-ava,.ct-ava,.msg-ava{filter:grayscale(1) contrast(1.15);background:#E7E6DF;}
+.msg-ava.ai,.msg-ava.me{background:#0A0A0A;color:#fff;}
+.msg-flow{background:#F5F5F1;}
+.msg.right .msg-text{background:#0A0A0A;border-color:#0A0A0A;}
+.ai-suggest{background:#F0F0EC;border-color:#AAA9A2;color:#31312E;}
+.chip:hover{border-color:#0A0A0A;color:#0A0A0A;}
+.cf-pill.active,.dh-tab.active{background:#0A0A0A;border-color:#0A0A0A;}
+.dh-tabs{background:#F9F9F6;border-color:#D8D7D0;}
+.avatar-card.selected,.model-pill.active,.pill.active,.plan-card.selected{border-color:#0A0A0A;background:#F0F0EC;box-shadow:3px 3px 0 #D1D0C9;}
+.avatar-face{background:#EAEAE5;filter:grayscale(1) contrast(1.15);border:1px solid #D2D1CA;}
+.avatar-check,.model-pill.active b,.cost-line b,.plan-price{color:#0A0A0A;}
+.play-btn{background:#0A0A0A;color:#fff;border:1px solid #0A0A0A;box-shadow:2px 2px 0 #CBCAC3;}
+.play-btn:hover{background:#fff;color:#0A0A0A;}
+.wave i{background:#0A0A0A;}
+.gallery-cover{filter:grayscale(1);background-color:#252525!important;background-image:repeating-linear-gradient(135deg,#111 0 14px,#292929 14px 28px)!important;}
+.upload-box:hover{border-color:#0A0A0A;color:#0A0A0A;background:#F0F0EC;}
+.example-chip:hover{color:#0A0A0A;border-color:#0A0A0A;}
+
+/* 状态栏、弹层与反馈 */
+.shell-statusbar{background:#0A0A0A;color:#DADAD5;border-top:1px solid #272727;}
+.sb-progress{background:#3A3A38;}
+.sb-progress i{background:#fff;}
+.sb-restart{border-color:#fff;background:#fff;color:#0A0A0A;}
+.sb-restart:hover{background:#DADAD5;}
+.sb-dot{box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+.modal-overlay{background:rgba(10,10,10,.58);backdrop-filter:blur(5px);}
+.modal-panel{border:1px solid #CBCAC3;border-radius:17px;box-shadow:0 28px 80px rgba(0,0,0,.28);}
+.modal-header{background:#FBFBF9;}
+.modal-close{background:#EFEFEB;color:#0A0A0A;}
+.modal-close:hover{background:#0A0A0A;color:#fff;}
+.auth-step.on{color:#0A0A0A;}
+.auth-step.on::before,.switch input:checked + i{background:#0A0A0A;}
+.anno{background:#0A0A0A;box-shadow:2px 2px 0 #B9B8B1;}
+.anno:hover{background:#343434;}
+.anno-pop-title,.dnotify-body b{color:#0A0A0A;}
+.dnotify,.toast{border-color:#CBCAC3;box-shadow:0 18px 50px rgba(10,10,10,.18);}
+.toast{border-left-color:#0A0A0A;}
+.req-details summary::before{color:#0A0A0A;}
+.data-table input[type="checkbox"]{accent-color:#0A0A0A;}
+
+/* 语义标签保留可读性，但整体降低饱和度 */
+.tag-success{background:#E8EFE9;color:#28452E}.tag-warning{background:#F2EEE2;color:#655026}
+.tag-danger{background:#F2E7E7;color:#6D2F2F}.tag-info{background:#E9EAEB;color:#30343A}.tag-gray{background:#EEEEEA;color:#4B4B47}
+.mini-tag.ai{background:#E9E9E5;color:#222}.mini-tag.manual{background:#F0ECE5;color:#57452E}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
+
 /* ============ 响应式 ============ */
 @media (max-width:1080px){
   .zone-grid{grid-template-columns:repeat(2,1fr);}
@@ -469,6 +690,61 @@ body.anno-off .anno{display:none;}
 </style>
 </head>
 <body>
+
+<!-- 智能获客插画图标：内嵌 SVG，不依赖外部图片资源 -->
+<svg class="smart-icon-defs" aria-hidden="true" width="0" height="0">
+  <defs>
+    <linearGradient id="si-blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#74ECFF"/><stop offset=".5" stop-color="#4D91FF"/><stop offset="1" stop-color="#6554E9"/></linearGradient>
+    <linearGradient id="si-purple" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E09BFF"/><stop offset=".48" stop-color="#8D63FF"/><stop offset="1" stop-color="#4F64EE"/></linearGradient>
+    <linearGradient id="si-mint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#83F4CF"/><stop offset=".52" stop-color="#34C8D8"/><stop offset="1" stop-color="#4E72F4"/></linearGradient>
+    <linearGradient id="si-warm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE276"/><stop offset=".5" stop-color="#FF8F71"/><stop offset="1" stop-color="#AF62F2"/></linearGradient>
+    <linearGradient id="si-glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#DCEBFF" stop-opacity=".7"/></linearGradient>
+    <filter id="si-shadow" x="-45%" y="-45%" width="190%" height="200%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#4065C7" flood-opacity=".23"/></filter>
+  </defs>
+
+  <symbol id="si-account" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><path d="M10 48 31 58l23-11-22-9Z" fill="#CFE8FF"/><path d="m14 42 18 9 18-9-18-9Z" fill="url(#si-blue)"/><circle cx="32" cy="20" r="10" fill="url(#si-purple)"/><path d="M18 40c2-9 8-13 14-13s12 4 14 13l-14 7Z" fill="url(#si-mint)"/><path d="M11 28c-4 3-4 9 0 12M53 28c4 3 4 9 0 12" fill="none" stroke="#52CFE5" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="25" r="3" fill="#20CE91"/><circle cx="54" cy="25" r="3" fill="#4B82FF"/></g>
+  </symbol>
+  <symbol id="si-reply" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="9" y="17" width="35" height="27" rx="9" fill="url(#si-purple)" transform="rotate(-7 9 17)"/><path d="m16 39-3 10 11-7" fill="#8A65F8"/><rect x="23" y="12" width="34" height="28" rx="9" fill="url(#si-blue)"/><path d="m48 37 5 9-12-7" fill="#586EF1"/><circle cx="33" cy="26" r="2.5" fill="#fff"/><circle cx="40" cy="26" r="2.5" fill="#fff"/><circle cx="47" cy="26" r="2.5" fill="#fff"/><circle cx="14" cy="14" r="5" fill="#FFF6CB"/><path d="m12 14 1.5 1.7L17 12" fill="none" stroke="#F2B73C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </symbol>
+  <symbol id="si-keyword" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><path d="M7 20h21v27H7z" fill="#DDF2FF"/><rect x="22" y="11" width="35" height="37" rx="7" fill="url(#si-blue)"/><rect x="27" y="17" width="25" height="19" rx="4" fill="url(#si-glass)"/><circle cx="41" cy="28" r="6" fill="none" stroke="#5177F4" stroke-width="3"/><path d="m45 33 6 6" stroke="#5177F4" stroke-width="3" stroke-linecap="round"/><path d="M28 41h16" stroke="#BBD4FF" stroke-width="3" stroke-linecap="round"/><path d="m13 25 5-5 5 5" fill="none" stroke="#FFC247" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </symbol>
+  <symbol id="si-process" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><ellipse cx="34" cy="49" rx="23" ry="7" fill="#DDF7FF"/><rect x="15" y="10" width="36" height="31" rx="8" fill="url(#si-blue)"/><rect x="20" y="16" width="26" height="15" rx="4" fill="url(#si-glass)"/><path d="M24 22h12M24 26h8" stroke="#6394F4" stroke-width="2.5" stroke-linecap="round"/><circle cx="48" cy="42" r="9" fill="url(#si-mint)"/><path d="M48 36v12M42 42h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="20" r="4" fill="#75E3C4"/><circle cx="55" cy="14" r="3" fill="#9875FF"/></g>
+  </symbol>
+  <symbol id="si-competitor" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="8" y="13" width="31" height="39" rx="7" fill="url(#si-blue)"/><rect x="25" y="9" width="31" height="39" rx="7" fill="url(#si-glass)" stroke="#BFD8FF"/><circle cx="40" cy="22" r="6" fill="url(#si-purple)"/><path d="M31 36c1-6 5-9 9-9s8 3 9 9" fill="url(#si-mint)"/><path d="M31 41h18" stroke="#94B9FA" stroke-width="2.5" stroke-linecap="round"/><path d="M14 22h10M14 28h7M14 42h14" stroke="#fff" stroke-opacity=".8" stroke-width="2.5" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="si-video" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><path d="m13 49 25 6 15-9-25-6Z" fill="#CFE9FF"/><rect x="13" y="12" width="39" height="34" rx="8" fill="url(#si-blue)"/><rect x="19" y="18" width="27" height="20" rx="5" fill="#EAF7FF" fill-opacity=".88"/><path d="m30 23 10 5-10 6Z" fill="#4D7EF6"/><path d="M20 42h19" stroke="#BDE7FF" stroke-width="2.5" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="si-searchlead" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><path d="M10 44c0-7 5-12 12-12h26c6 0 10 4 10 10s-4 10-10 10H20c-6 0-10-3-10-8Z" fill="#DDF3FF"/><path d="M18 15h29l7 8-5 24H16l-5-24Z" fill="url(#si-blue)"/><path d="m29 24 12 7-12 7Z" fill="#fff"/><circle cx="51" cy="16" r="6" fill="url(#si-mint)"/><path d="m54 20 5 5" stroke="#3E9ACF" stroke-width="2.5" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="si-live" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="9" y="17" width="34" height="31" rx="8" fill="url(#si-purple)"/><path d="M17 28v8M23 24v16M29 29v6M35 22v20" stroke="#fff" stroke-opacity=".9" stroke-width="3" stroke-linecap="round"/><circle cx="48" cy="37" r="10" fill="url(#si-blue)"/><circle cx="48" cy="37" r="4" fill="#fff"/><path d="M53 27c5 3 7 7 7 12" fill="none" stroke="#7EE0E8" stroke-width="2.5" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="si-fan" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><path d="M10 49h44l-5 6H15Z" fill="#79A9FF"/><circle cx="31" cy="23" r="10" fill="url(#si-purple)"/><path d="M15 48c2-11 8-17 16-17s14 6 17 17Z" fill="url(#si-blue)"/><path d="m49 21 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#79F0D0"/><circle cx="14" cy="18" r="4" fill="#FFD66E"/></g>
+  </symbol>
+  <symbol id="si-tasks" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><circle cx="34" cy="34" r="25" fill="#E5F4FF"/><rect x="18" y="11" width="31" height="42" rx="7" fill="url(#si-blue)"/><rect x="24" y="18" width="7" height="7" rx="2" fill="#fff"/><path d="m25 21 2 2 4-5" fill="none" stroke="#4E77EC" stroke-width="1.8"/><path d="M35 21h9M35 32h9M35 43h9" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><rect x="24" y="29" width="7" height="7" rx="2" fill="#B6E9FF"/><rect x="24" y="40" width="7" height="7" rx="2" fill="#B6E9FF"/></g>
+  </symbol>
+  <symbol id="si-interact" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><circle cx="32" cy="33" r="24" fill="#E7F4FF"/><path d="M17 31a16 16 0 0 1 25-11" fill="none" stroke="url(#si-blue)" stroke-width="7" stroke-linecap="round"/><path d="m39 14 8 6-9 4" fill="url(#si-purple)"/><path d="M47 35a16 16 0 0 1-25 11" fill="none" stroke="url(#si-purple)" stroke-width="7" stroke-linecap="round"/><path d="m25 52-8-6 9-4" fill="url(#si-blue)"/><path d="M32 27v12M26 33h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="si-comments" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="10" y="10" width="30" height="39" rx="7" fill="url(#si-glass)" stroke="#C2D8FF"/><path d="M17 20h16M17 27h13M17 34h16" stroke="#79A4F8" stroke-width="2.5" stroke-linecap="round"/><rect x="27" y="25" width="28" height="31" rx="7" fill="url(#si-blue)"/><path d="M35 35h13M35 41h10" stroke="#fff" stroke-opacity=".85" stroke-width="2.5" stroke-linecap="round"/><path d="m47 52 6 6-1-9" fill="#5E65E8"/></g>
+  </symbol>
+  <symbol id="si-livecomments" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="8" y="14" width="47" height="36" rx="9" fill="url(#si-purple)"/><path d="m43 48 8 8-1-11" fill="#6755E5"/><circle cx="20" cy="27" r="5" fill="url(#si-mint)"/><path d="M29 24h17M29 30h13M16 40h29" stroke="#fff" stroke-opacity=".9" stroke-width="2.5" stroke-linecap="round"/><circle cx="53" cy="15" r="6" fill="#FF738F"/><circle cx="53" cy="15" r="2" fill="#fff"/></g>
+  </symbol>
+  <symbol id="si-fanlist" viewBox="0 0 64 64">
+    <g filter="url(#si-shadow)"><rect x="8" y="11" width="48" height="43" rx="9" fill="url(#si-glass)" stroke="#C4D9FF"/><circle cx="22" cy="26" r="7" fill="url(#si-purple)"/><path d="M12 43c1-7 5-11 10-11s9 4 10 11" fill="url(#si-blue)"/><path d="M36 22h13M36 29h10M36 39h13M36 46h8" stroke="#6E9AF1" stroke-width="2.8" stroke-linecap="round"/><circle cx="53" cy="47" r="7" fill="url(#si-mint)"/><path d="M53 43v8M49 47h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+  </symbol>
+</svg>
 
 <div class="demo">
 <div class="demo-inner">
@@ -495,14 +771,14 @@ body.anno-off .anno{display:none;}
     <div class="window-mock">
       <div class="titlebar">
         <span class="win-dot close"></span><span class="win-dot min"></span><span class="win-dot max"></span>
-        <span class="tb-title">阿斯系统 桌面客户端</span>
+        <span class="tb-title"></span>
         <span class="tb-right"><button class="anno" data-note="a1">1</button></span>
       </div>
       <div class="login-wrap">
         <div class="login-card">
           <div class="login-brand">
             <div class="login-brand-icon">AS</div>
-            <span class="login-brand-name">阿斯系统<small>AI 超级员工 · V1.0</small></span>
+            <span class="login-brand-name">阿斯系统<small>智能增长中枢 · V1.0</small></span>
           </div>
           <div class="login-card-box">
             <div class="login-tabs">
@@ -546,24 +822,24 @@ body.anno-off .anno{display:none;}
     <div class="window-mock">
       <div class="titlebar">
         <span class="win-dot close"></span><span class="win-dot min"></span><span class="win-dot max"></span>
-        <span class="tb-title">阿斯系统 桌面客户端</span>
+        <span class="tb-title"></span>
         <div class="tb-right">
           <button class="tb-btn" onclick="showToast('页面已刷新（云端最新版本）')">⟳</button>
           <span class="tb-pill">到期时间 <b>2027-11-26 14:50</b></span>
           <button class="tb-pill tb-points" onclick="openModal('m-recharge')">⚡ 算力点 <b id="points-val">1,000</b></button>
-          <span class="tb-user"><span class="ava ava-sm">雅</span>小雅 · 业务组</span>
+          <span class="tb-user"><span class="ava ava-sm">超</span>超级管理员</span>
           <button class="anno" data-note="b2">2</button>
         </div>
       </div>
 
       <div class="web-ui">
         <aside class="web-sidebar">
-          <div class="web-brand"><div class="web-brand-icon">AS</div><span>阿斯系统<small>V1.0 · 网页封装</small></span></div>
+          <div class="web-brand"><div class="web-brand-icon">AS</div><span>阿斯系统</span></div>
           <nav class="web-nav" id="web-nav"></nav>
         </aside>
         <div class="web-body">
           <div class="web-topbar">
-            <div><h2 id="web-h1">工作台</h2><small id="web-h1sub">今日概览与快速操作</small></div>
+            <div><h2 id="web-h1">工作台</h2><small id="web-h1sub"></small></div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="tag tag-success" id="topbar-engine-tag">RPA 引擎在线</span>
             </div>
@@ -574,32 +850,17 @@ body.anno-off .anno{display:none;}
             <section class="web-page active" data-page="workbench">
               <div class="mini-hero">
                 <div class="mini-hero-c">
-                  <h2>阿斯系统 · AI 超级员工</h2>
-                  <p>智能获客 × 数字人 × 文生视频，一台电脑顶一支「内容 + 获客」团队</p>
+                  <span class="hero-kicker">AS GROWTH OS</span>
+                  <h2>阿斯系统 · 智能增长中枢</h2>
+                  <p>让获客、内容、客户沟通与设备协同，在一个工作台高效运转</p>
                 </div>
               </div>
+              <div class="section-title overview-title">数据总览 <small>今日业务数据实时汇总</small></div>
               <div class="stats-grid">
                 <div class="stat-card"><div class="stat-label">运行中任务</div><div class="stat-value">1</div><div class="stat-delta">关键词拓客 · 18/30</div></div>
                 <div class="stat-card"><div class="stat-label">今日新增线索</div><div class="stat-value">128</div><div class="stat-delta">↑ 23% 较昨日</div></div>
                 <div class="stat-card"><div class="stat-label">累计私信触达</div><div class="stat-value">3,420</div><div class="stat-delta">含自动回复命中</div></div>
-                <div class="stat-card"><div class="stat-label">已生成视频</div><div class="stat-value">8</div><div class="stat-delta">数字人 5 · 文生 3</div></div>
-              </div>
-              <div class="quick-grid">
-                <button class="quick-card" onclick="goPage('smart')">
-                  <div class="quick-ico" style="background:linear-gradient(135deg,#4B3FE3,#7C3AED)">🎯</div>
-                  <div class="quick-title">智能获客</div>
-                  <div class="quick-desc">某音 / 小某书 / 某手评论区、直播间、粉丝智能触达；私信会话 AI 托管，线索自动沉淀</div>
-                </button>
-                <button class="quick-card" onclick="goPage('digital')">
-                  <div class="quick-ico" style="background:linear-gradient(135deg,#EC4899,#F472B6)">🎙</div>
-                  <div class="quick-title">数字人</div>
-                  <div class="quick-desc">声音复刻 / 形象定制 / 文案直出口播视频，公共形象库免费可用</div>
-                </button>
-                <button class="quick-card" onclick="goPage('video')">
-                  <div class="quick-ico" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)">🎬</div>
-                  <div class="quick-title">文生视频</div>
-                  <div class="quick-desc">输入提示词直出成片，Grok / Seedance 双引擎，支持参考图</div>
-                </button>
+                <div class="stat-card"><div class="stat-label">今日自动化执行</div><div class="stat-value">42</div><div class="stat-delta">成功 40 · 待处理 2</div></div>
               </div>
               <div class="two-col">
                 <div class="card">
@@ -649,19 +910,19 @@ body.anno-off .anno{display:none;}
               <div class="section-title">主要功能 <small>账号 · 话术 · 关键词 · 进程</small></div>
               <div class="zone-grid">
                 <button class="zone-card t-purple" onclick="openModal('m-account')">
-                  <div class="zone-ico ico-purple">👤</div>
+                  <div class="zone-ico ico-purple"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-account"></use></svg></div>
                   <div><div class="zone-title">账号管理</div><div class="zone-desc">授权和管理平台账号，查看账号状态和数据</div></div>
                 </button>
                 <button class="zone-card t-orange" onclick="openModal('m-reply')">
-                  <div class="zone-ico ico-orange">💬</div>
+                  <div class="zone-ico ico-orange"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-reply"></use></svg></div>
                   <div><div class="zone-title">回复 / 私信预设</div><div class="zone-desc">自由挑选已保存的常用语句，灵活应对各类私信场景，回复更轻松</div></div>
                 </button>
                 <button class="zone-card t-cyan" onclick="openModal('m-keyword')">
-                  <div class="zone-ico ico-cyan">🎯</div>
+                  <div class="zone-ico ico-cyan"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-keyword"></use></svg></div>
                   <div><div class="zone-title">关键词预设</div><div class="zone-desc">预先配置目标关键词，智能筛选并识别出包含该词汇的用户评论，精准锁定意向客户</div></div>
                 </button>
                 <button class="zone-card t-green" onclick="openModal('m-process')">
-                  <div class="zone-ico ico-green">⚙</div>
+                  <div class="zone-ico ico-green"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-process"></use></svg></div>
                   <div><div class="zone-title">运行进程管理</div><div class="zone-desc">查看当前运行中的任务，可对其进行操作</div></div>
                 </button>
               </div>
@@ -671,27 +932,27 @@ body.anno-off .anno{display:none;}
               </div>
               <div class="acq-grid">
                 <button class="acq-card t-blue" onclick="openModal('m-acq-competitor')">
-                  <div class="acq-ico ico-blue">👥</div>
+                  <div class="acq-ico ico-blue"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-competitor"></use></svg></div>
                   <div class="acq-title">对标拓客</div>
                   <div class="acq-desc">针对特定用户精准拓客，分析竞争对手粉丝与评论</div>
                 </button>
                 <button class="acq-card t-orange" onclick="openModal('m-acq-video')">
-                  <div class="acq-ico ico-orange">📹</div>
+                  <div class="acq-ico ico-orange"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-video"></use></svg></div>
                   <div class="acq-title">视频拓客</div>
                   <div class="acq-desc">通过视频内容拓客，分析视频表现和受众</div>
                 </button>
                 <button class="acq-card t-green" onclick="openModal('m-acq-keyword')">
-                  <div class="acq-ico ico-green">🔍</div>
+                  <div class="acq-ico ico-green"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-searchlead"></use></svg></div>
                   <div class="acq-title">关键词拓客</div>
                   <div class="acq-desc">基于关键词搜索拓客，精准定位目标用户</div>
                 </button>
                 <button class="acq-card t-purple" onclick="openModal('m-acq-live')">
-                  <div class="acq-ico ico-purple">📡</div>
+                  <div class="acq-ico ico-purple"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-live"></use></svg></div>
                   <div class="acq-title">直播拓客</div>
                   <div class="acq-desc">基于直播间配合关键词拓客，精准定位目标用户</div>
                 </button>
                 <button class="acq-card t-blue" onclick="openModal('m-acq-fan')">
-                  <div class="acq-ico ico-cyan">❤</div>
+                  <div class="acq-ico ico-cyan"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-fan"></use></svg></div>
                   <div class="acq-title">粉丝拓客</div>
                   <div class="acq-desc">针对粉丝进行拓客，分析粉丝互动和转化效果</div>
                 </button>
@@ -700,27 +961,27 @@ body.anno-off .anno{display:none;}
               <div class="section-title">任务明细 <small>线索沉淀 · 可导出跟进</small><button class="anno" data-note="c7">6</button></div>
               <div class="task-grid">
                 <button class="task-card t-green" onclick="openModal('m-tasks')">
-                  <div class="task-ico ico-green">📋</div>
+                  <div class="task-ico ico-green"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-tasks"></use></svg></div>
                   <div class="task-title">任务列表</div>
                   <div class="task-desc">查看已执行的任务列表，了解执行进度和结果</div>
                 </button>
                 <button class="task-card t-blue" onclick="openModal('m-interact')">
-                  <div class="task-ico ico-blue">🤝</div>
+                  <div class="task-ico ico-blue"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-interact"></use></svg></div>
                   <div class="task-title">互动记录列表</div>
                   <div class="task-desc">查看点赞和关注的历史记录，分析互动效果</div>
                 </button>
                 <button class="task-card t-purple" onclick="openModal('m-comment')">
-                  <div class="task-ico ico-purple">🗨</div>
+                  <div class="task-ico ico-purple"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-comments"></use></svg></div>
                   <div class="task-title">数据评论列表</div>
                   <div class="task-desc">查看和管理账号的评论数据和互动记录</div>
                 </button>
                 <button class="task-card t-orange" onclick="openModal('m-live')">
-                  <div class="task-ico ico-orange">📺</div>
+                  <div class="task-ico ico-orange"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-livecomments"></use></svg></div>
                   <div class="task-title">直播评论列表</div>
                   <div class="task-desc">查看和管理直播间的评论数据和互动记录</div>
                 </button>
                 <button class="task-card t-purple" onclick="openModal('m-fan')">
-                  <div class="task-ico ico-pink">💗</div>
+                  <div class="task-ico ico-pink"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#si-fanlist"></use></svg></div>
                   <div class="task-title">粉丝列表</div>
                   <div class="task-desc">查看和管理已采集粉丝数据与触达状态</div>
                 </button>
@@ -2016,7 +2277,7 @@ const STATUS_MAP = {
 
 // ---------- 导航 ----------
 const NAV = [
-  { key: 'workbench', label: '工作台', icon: '🏠', sub: '今日概览与快速操作' },
+  { key: 'workbench', label: '工作台', icon: '🏠', sub: '' },
   { gid: 'acq', group: 'AI 智能获客', icon: '🎯', children: [
     { key: 'smart', label: '智能获客', icon: '🎯', sub: '账号 · 拓客 · 任务明细' },
     { key: 'chat', label: '聊天接管', icon: '💬', sub: '私信会话 · AI 自动回复 · 人工接管' },
