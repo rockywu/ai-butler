@@ -42,6 +42,28 @@ describe('platform adapters', () => {
 
   it('rejects a desktop bridge protocol mismatch', async () => {
     const bridge: DesktopBridge = {
+      browser: {
+        getState: async () => ({
+          data: {
+            browserType: null,
+            sessionId: null,
+            state: 'idle',
+            taskId: null,
+          },
+          ok: true,
+        }),
+        onProgress: () => () => {},
+        start: async () => ({
+          data: {
+            browserType: null,
+            sessionId: null,
+            state: 'idle',
+            taskId: null,
+          },
+          ok: true,
+        }),
+        stop: async () => ({ data: { stopped: true as const }, ok: true }),
+      },
       protocolVersion: PLATFORM_PROTOCOL_VERSION + 1,
       runtime: {
         getInfo: async () => ({ data: desktopInfo, ok: true }),
@@ -57,5 +79,51 @@ describe('platform adapters', () => {
       },
       ok: false,
     });
+  });
+});
+
+describe('browser session adapters', () => {
+  it('marks browser sessions unsupported on web', async () => {
+    const api = createWebPlatformApi('0.1.0');
+    const result = await api.browser.start({
+      browserType: 'chrome',
+      taskId: 'sample.blank',
+    });
+    expect(result).toEqual({
+      error: {
+        code: 'unsupported',
+        message: 'Browser sessions require the desktop app',
+      },
+      ok: false,
+    });
+    expect(api.runtime.getInfo).toBeTypeOf('function');
+    const info = await api.runtime.getInfo();
+    expect(info.ok && info.data.capabilities).not.toContain('browser.session');
+  });
+
+  it('forwards browser.start through the desktop bridge', async () => {
+    const snapshot = {
+      browserType: 'chrome' as const,
+      sessionId: 's1',
+      state: 'preparing' as const,
+      taskId: 'sample.blank',
+    };
+    const bridge: DesktopBridge = {
+      browser: {
+        getState: async () => ({ data: snapshot, ok: true }),
+        onProgress: () => () => {},
+        start: async () => ({ data: snapshot, ok: true }),
+        stop: async () => ({ data: { stopped: true as const }, ok: true }),
+      },
+      protocolVersion: PLATFORM_PROTOCOL_VERSION,
+      runtime: {
+        getInfo: async () => ({ data: desktopInfo, ok: true }),
+      },
+    };
+    const result = await createDesktopPlatformApi(bridge).browser.start({
+      browserType: 'chrome',
+      taskId: 'sample.blank',
+    });
+    expect(result).toEqual({ data: snapshot, ok: true });
   });
 });

@@ -1,21 +1,50 @@
 import type {
+  BrowserProgressEvent,
+  BrowserSessionApi,
   DesktopBridge,
   PlatformApi,
+  PlatformErrorCode,
   PlatformResult,
-  RuntimeInfo,
 } from '@ai-butler/platform-api';
 
 import { PLATFORM_PROTOCOL_VERSION } from '@ai-butler/platform-api';
 
-function failure(
-  code: 'conflict' | 'unavailable',
+function failure<T>(
+  code: PlatformErrorCode,
   message: string,
-): PlatformResult<RuntimeInfo> {
+): PlatformResult<T> {
   return { error: { code, message }, ok: false };
+}
+
+function unsupportedBrowserApi(): BrowserSessionApi {
+  const unsupported = <T>() =>
+    Promise.resolve(
+      failure<T>('unsupported', 'Browser sessions require the desktop app'),
+    );
+
+  return {
+    getState: () => unsupported(),
+    onProgress: () => () => {},
+    start: () => unsupported(),
+    stop: () => unsupported(),
+  };
+}
+
+function unavailableBrowserApi(): BrowserSessionApi {
+  const unavailable = <T>() =>
+    Promise.resolve(failure<T>('unavailable', 'Desktop bridge is unavailable'));
+
+  return {
+    getState: () => unavailable(),
+    onProgress: () => () => {},
+    start: () => unavailable(),
+    stop: () => unavailable(),
+  };
 }
 
 export function createWebPlatformApi(appVersion: string): PlatformApi {
   return {
+    browser: unsupportedBrowserApi(),
     protocolVersion: PLATFORM_PROTOCOL_VERSION,
     runtime: {
       getInfo: async () => ({
@@ -37,6 +66,15 @@ export function createDesktopPlatformApi(
   bridge: DesktopBridge | undefined,
 ): PlatformApi {
   return {
+    browser: bridge
+      ? {
+          getState: () => bridge.browser.getState(),
+          onProgress: (handler: (event: BrowserProgressEvent) => void) =>
+            bridge.browser.onProgress(handler),
+          start: (request) => bridge.browser.start(request),
+          stop: () => bridge.browser.stop(),
+        }
+      : unavailableBrowserApi(),
     protocolVersion: PLATFORM_PROTOCOL_VERSION,
     runtime: {
       getInfo: async () => {
