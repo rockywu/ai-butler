@@ -1,0 +1,21 @@
+{
+  "name": "@ai-butler/desktop-plugin-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vben/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
