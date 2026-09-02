@@ -106,6 +106,8 @@ export async function javascript(): Promise<Linter.Config[]> {
         ...recommendedRules,
         'dot-notation': ['error', { allowKeywords: true }],
         'keyword-spacing': 'off',
+        // 仅警告，不因 console 阻塞提交；scripts/internal 等在 custom-config 中仍可 off
+        'no-console': ['warn', { allow: ['warn', 'error'] }],
         'no-empty-function': 'off',
         'no-octal': 'error',
         'no-octal-escape': 'error',

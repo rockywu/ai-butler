@@ -18,8 +18,9 @@ coverage
 .turbo
 .temp
 dev-dist
-apps/desktop/out/
-apps/desktop/release/
+# Electron 应用构建与安装产物（desktop / desktop-plugin 等）
+apps/desktop*/out/
+apps/desktop*/release/
 .stylelintcache
 yarn.lock
 package-lock.json

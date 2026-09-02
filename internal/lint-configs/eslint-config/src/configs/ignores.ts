@@ -8,6 +8,9 @@ export async function ignores(): Promise<Linter.Config[]> {
         '**/dist',
         '**/dist-*',
         '**/*-dist',
+        // Electron 构建产物
+        '**/out',
+        '**/release',
         '**/.husky',
         '**/.nitro',
         '**/.output',
@@ -54,6 +57,9 @@ export async function ignores(): Promise<Linter.Config[]> {
         '**/.codex/**',
         '**/.claude/**',
         '**/.cursor/**',
+
+        // 产品原型与示例脚本，不纳入业务 lint
+        'ui-demo/**',
       ],
     },
   ];

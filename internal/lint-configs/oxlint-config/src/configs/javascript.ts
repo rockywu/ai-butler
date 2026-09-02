@@ -42,7 +42,7 @@ const javascript: OxlintConfig = {
     'no-array-constructor': 'error',
     'no-caller': 'error',
     'no-case-declarations': 'error',
-    'no-console': ['error', { allow: ['warn', 'error'] }],
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-control-regex': 'error',
     'no-debugger': 'error',
     'no-empty': ['error', { allowEmptyCatch: true }],
