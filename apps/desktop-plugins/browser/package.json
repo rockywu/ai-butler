@@ -1,0 +1,30 @@
+{
+  "name": "@ai-butler/desktop-plugin-browser",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "aiButlerPlugin": {
+    "id": "browser",
+    "protocolVersion": 1,
+    "entry": "dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-butler/desktop-plugin-protocol": "workspace:*",
+    "playwright": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vben/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
