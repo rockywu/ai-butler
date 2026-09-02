@@ -1,3 +1,5 @@
+export { PluginClient, PluginClientError } from './client';
+export type { PluginTransport } from './client';
 export {
   encodeEnvelope,
   parseEnvelope,
