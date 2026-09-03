@@ -3,7 +3,7 @@ import type { VbenFormSchema } from '@vben-core/form-ui';
 
 import type { LoginTab } from '#/views/ai-butler/_shared/login-payload';
 
-import { onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref } from 'vue';
 
 import { useVbenForm } from '@vben-core/form-ui';
 import { VbenButton, VbenCheckbox } from '@vben-core/shadcn-ui';
@@ -24,6 +24,21 @@ const loginTabs: Array<{ label: string; value: LoginTab }> = [
   { label: '验证码登录', value: 'code' },
   { label: '密码登录', value: 'pwd' },
 ];
+const codeValues = reactive({
+  code: '',
+  phone: '138****6688',
+});
+const pwdValues = reactive({
+  password: '123456',
+  phone: 'vben',
+});
+const loginDisabled = computed(() => {
+  if (!agreed.value) return true;
+
+  return activeTab.value === 'code'
+    ? !codeValues.phone.trim() || !codeValues.code.trim()
+    : !pwdValues.phone.trim() || !pwdValues.password.trim();
+});
 
 const codeSchema: VbenFormSchema[] = [
   {
@@ -31,6 +46,7 @@ const codeSchema: VbenFormSchema[] = [
     componentProps: {
       placeholder: '请输入手机号',
     },
+    defaultValue: '138****6688',
     fieldName: 'phone',
     label: '手机号',
     rules: 'required',
@@ -52,6 +68,7 @@ const pwdSchema: VbenFormSchema[] = [
     componentProps: {
       placeholder: '请输入手机号',
     },
+    defaultValue: 'vben',
     fieldName: 'phone',
     label: '手机号',
     rules: 'required',
@@ -61,6 +78,7 @@ const pwdSchema: VbenFormSchema[] = [
     componentProps: {
       placeholder: '请输入密码',
     },
+    defaultValue: '123456',
     fieldName: 'password',
     label: '密码',
     rules: 'required',
@@ -77,10 +95,16 @@ const commonFormConfig = {
 
 const [CodeForm, codeFormApi] = useVbenForm({
   ...commonFormConfig,
+  handleValuesChange(values) {
+    Object.assign(codeValues, values);
+  },
   schema: codeSchema,
 });
 const [PwdForm, pwdFormApi] = useVbenForm({
   ...commonFormConfig,
+  handleValuesChange(values) {
+    Object.assign(pwdValues, values);
+  },
   schema: pwdSchema,
 });
 
@@ -189,6 +213,7 @@ onBeforeUnmount(() => {
             :loading="authStore.loginLoading"
             aria-label="login"
             class="w-full bg-[#0A0A0A] shadow-[4px_4px_0_#D6D5CF] hover:bg-[#242424]"
+            :disabled="loginDisabled"
             @click="handleSubmit"
           >
             登 录
