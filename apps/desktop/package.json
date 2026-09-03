@@ -6,8 +6,10 @@
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
-    "build": "node ./scripts/emit-browser-plugin.mjs && electron-vite build && node ./scripts/emit-preload-cjs.mjs",
-    "dev": "node ./scripts/emit-browser-plugin.mjs && node ./scripts/emit-preload-cjs.mjs && wait-on http://localhost:5666 && cross-env AI_BUTLER_RENDERER_URL=http://localhost:5666 electron-vite dev",
+    "build": "node ./scripts/ensure-electron.mjs && node ./scripts/emit-browser-plugin.mjs && electron-vite build && node ./scripts/emit-preload-cjs.mjs",
+    "build:mac": "electron-builder --mac --dir --publish never",
+    "build:windows": "electron-builder --win --x64 --dir --publish never",
+    "dev": "node ./scripts/ensure-electron.mjs && node ./scripts/emit-browser-plugin.mjs && node ./scripts/emit-preload-cjs.mjs && wait-on tcp:127.0.0.1:5666 && cross-env AI_BUTLER_RENDERER_URL=http://127.0.0.1:5666 electron-vite dev",
     "emit:plugin": "node ./scripts/emit-browser-plugin.mjs",
     "emit:preload": "node ./scripts/emit-preload-cjs.mjs",
     "dist:mac": "electron-builder --mac --publish never",
