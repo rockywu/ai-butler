@@ -1,0 +1,18 @@
+{
+  "id": "sample.blank",
+  "steps": [
+    {
+      "id": "new-page",
+      "target": "context",
+      "method": "newPage",
+      "args": []
+    },
+    {
+      "id": "goto-blank",
+      "target": "page",
+      "method": "goto",
+      "args": ["about:blank"],
+      "verify": true
+    }
+  ]
+}
