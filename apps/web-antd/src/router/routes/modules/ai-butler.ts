@@ -4,7 +4,7 @@ const routes: RouteRecordRaw[] = [
   {
     meta: {
       hideInMenu: true,
-      title: '阿斯系统',
+      title: 'Root',
     },
     name: 'AiButler',
     path: '/ai-butler',

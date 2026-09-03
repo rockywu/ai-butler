@@ -17,6 +17,7 @@ describe('ai-butler routes', () => {
   it('groups acquisition pages under AI 智能获客', () => {
     const root = aiButler.find((r) => r.name === 'AiButler');
     expect(root?.meta?.hideInMenu).toBe(true);
+    expect(root?.meta?.title).toBe('Root');
     const names = flatten(aiButler).map((r) => r.name);
     expect(names).toContain('AiButlerGrowth');
     expect(names).toContain('AiButlerAcquisition');
