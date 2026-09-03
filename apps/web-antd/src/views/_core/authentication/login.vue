@@ -153,10 +153,10 @@ onBeforeUnmount(() => {
 
 <template>
   <main
-    class="grid min-h-full place-items-center overflow-y-auto bg-[#F4F4F1] bg-[linear-gradient(rgba(10,10,10,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,10,0.035)_1px,transparent_1px)] bg-[size:28px_28px] p-6"
+    class="grid w-full min-w-0 max-w-full place-items-center overflow-x-hidden overflow-y-auto bg-[#F4F4F1] bg-[linear-gradient(rgba(10,10,10,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,10,0.035)_1px,transparent_1px)] bg-[size:28px_28px] p-0 sm:p-2"
     @keydown.enter.prevent="handleSubmit"
   >
-    <section class="w-full max-w-[400px]">
+    <section class="w-full min-w-0 max-w-[400px]">
       <header class="mb-[22px] flex items-center justify-center gap-3">
         <div
           class="grid size-[45px] place-items-center rounded-lg border border-[#0A0A0A] bg-[#0A0A0A] text-[15px] font-bold tracking-[-0.04em] text-white shadow-[5px_5px_0_#D8D7D0]"
@@ -174,15 +174,15 @@ onBeforeUnmount(() => {
       </header>
 
       <div
-        class="rounded-[18px] border border-[#D1D0C9] bg-white px-6 py-[26px] shadow-[0_18px_50px_rgba(10,10,10,0.09)]"
+        class="min-w-0 rounded-[18px] border border-[#D1D0C9] bg-white px-4 py-[22px] shadow-[0_18px_50px_rgba(10,10,10,0.09)] sm:px-6 sm:py-[26px]"
       >
         <div
-          class="mb-4 flex gap-1 rounded-xl border border-[#E2E1DB] bg-[#F0F0EC] p-1"
+          class="mb-4 flex min-w-0 gap-1 rounded-xl border border-[#E2E1DB] bg-[#F0F0EC] p-1"
         >
           <button
             v-for="tab in loginTabs"
             :key="tab.value"
-            class="flex-1 rounded-lg px-3 py-2 text-[13px] transition-colors"
+            class="min-w-0 flex-1 rounded-lg px-2 py-2 text-[12px] transition-colors sm:px-3 sm:text-[13px]"
             :class="
               activeTab === tab.value
                 ? 'bg-[#0A0A0A] font-semibold text-white'
@@ -219,26 +219,30 @@ onBeforeUnmount(() => {
             登 录
           </VbenButton>
 
-          <VbenCheckbox v-model="agreed" name="agreement">
-            <span class="text-xs leading-relaxed text-[#77736B]">
-              我已阅读并同意
-              <button
-                class="text-[#0A0A0A] underline underline-offset-2"
-                type="button"
-                @click.stop="showAgreement"
-              >
-                《服务协议》
-              </button>
-              和
-              <button
-                class="text-[#0A0A0A] underline underline-offset-2"
-                type="button"
-                @click.stop="showAgreement"
-              >
-                《隐私政策》
-              </button>
-            </span>
-          </VbenCheckbox>
+          <div
+            class="min-w-0 [&_div]:min-w-0 [&_div]:items-start [&_label]:min-w-0 [&_label]:flex-1 [&_label]:whitespace-normal [&_label]:leading-relaxed"
+          >
+            <VbenCheckbox v-model="agreed" name="agreement">
+              <span class="break-words text-xs leading-relaxed text-[#77736B]">
+                我已阅读并同意
+                <button
+                  class="text-[#0A0A0A] underline underline-offset-2"
+                  type="button"
+                  @click.stop="showAgreement"
+                >
+                  《服务协议》
+                </button>
+                和
+                <button
+                  class="text-[#0A0A0A] underline underline-offset-2"
+                  type="button"
+                  @click.stop="showAgreement"
+                >
+                  《隐私政策》
+                </button>
+              </span>
+            </VbenCheckbox>
+          </div>
         </div>
       </div>
 

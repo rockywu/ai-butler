@@ -12,6 +12,8 @@ const schema: VbenFormSchema[] = [
     component: 'RadioGroup',
     componentProps: {
       buttonStyle: 'solid',
+      class:
+        '!flex !flex-col gap-2 sm:!flex-row sm:flex-wrap [&_.ant-radio-button-wrapper]:w-full sm:[&_.ant-radio-button-wrapper]:w-auto',
       options: [
         { label: '¥100 · 1,000 点', value: 1000 },
         { label: '¥500 · 5,500 点（加赠 10%）', value: 5500 },
@@ -28,6 +30,7 @@ const schema: VbenFormSchema[] = [
     component: 'RadioGroup',
     componentProps: {
       buttonStyle: 'solid',
+      class: '!flex !flex-wrap gap-2 [&_.ant-radio-button-wrapper]:min-w-0',
       options: [
         { label: '微信支付', value: 'wx' },
         { label: '支付宝', value: 'alipay' },
@@ -51,6 +54,8 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Modal, modalApi] = useVbenModal({
+  class: 'w-[calc(100%-32px)] sm:w-[520px]',
+  fullscreenButton: true,
   async onConfirm() {
     await formApi.validateAndSubmit();
   },

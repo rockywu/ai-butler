@@ -212,31 +212,33 @@ function markContact(row: MockContact) {
         </span>
       </div>
 
-      <Grid>
-        <template #contact="{ row }">
-          <div class="flex items-center gap-2">
-            <Avatar :size="28" class="!flex-shrink-0">{{ row.ava }}</Avatar>
-            <span class="text-[13px] font-medium">{{ row.name }}</span>
-          </div>
-        </template>
-        <template #platform="{ row }">
-          <Tag :color="platformColor(row.platform)">
-            {{ acqPlatformLabels[row.platform] ?? row.platform }}
-          </Tag>
-        </template>
-        <template #status="{ row }">
-          <Tag :color="statusColor(row.status)">{{ row.status }}</Tag>
-        </template>
-        <template #actions="{ row }">
-          <Button size="small" type="link" @click="viewContact">查看</Button>
-          <Button size="small" type="link" @click="followContact(row)">
-            跟进
-          </Button>
-          <Button size="small" type="link" @click="markContact(row)">
-            标记
-          </Button>
-        </template>
-      </Grid>
+      <div class="min-w-0 overflow-x-auto">
+        <Grid>
+          <template #contact="{ row }">
+            <div class="flex items-center gap-2">
+              <Avatar :size="28" class="!flex-shrink-0">{{ row.ava }}</Avatar>
+              <span class="text-[13px] font-medium">{{ row.name }}</span>
+            </div>
+          </template>
+          <template #platform="{ row }">
+            <Tag :color="platformColor(row.platform)">
+              {{ acqPlatformLabels[row.platform] ?? row.platform }}
+            </Tag>
+          </template>
+          <template #status="{ row }">
+            <Tag :color="statusColor(row.status)">{{ row.status }}</Tag>
+          </template>
+          <template #actions="{ row }">
+            <Button size="small" type="link" @click="viewContact">查看</Button>
+            <Button size="small" type="link" @click="followContact(row)">
+              跟进
+            </Button>
+            <Button size="small" type="link" @click="markContact(row)">
+              标记
+            </Button>
+          </template>
+        </Grid>
+      </div>
     </Card>
 
     <ImportModal ref="importModalRef" />
