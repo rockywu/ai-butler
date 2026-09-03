@@ -21,6 +21,7 @@ import { openWindow } from '@vben/utils';
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
+import RechargeModal from '#/views/ai-butler/recharge/recharge-modal.vue';
 
 const notifications = ref<NotificationItem[]>([
   {
@@ -81,6 +82,12 @@ const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
 const { isDark } = usePreferences();
+const rechargeModalRef = ref<InstanceType<typeof RechargeModal>>();
+const rechargeModalApi = {
+  open() {
+    rechargeModalRef.value?.modalApi.open();
+  },
+};
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
 );
@@ -223,6 +230,22 @@ watch(
     @clear-preferences-and-logout="handleLogout"
     @logout="handleLogout"
   >
+    <template #header-right-0>
+      <span
+        class="hidden rounded-full border border-[#D9D8D1] bg-white px-2.5 py-1 text-[12px] sm:inline"
+      >
+        到期时间 <b>2027-11-26 14:50</b>
+      </span>
+    </template>
+    <template #header-right-1>
+      <button
+        type="button"
+        class="rounded-full border border-[#0A0A0A] bg-white px-2.5 py-1 text-[12px] hover:bg-[#0A0A0A] hover:text-white"
+        @click="rechargeModalApi.open()"
+      >
+        算力点 <b>1,000</b>
+      </button>
+    </template>
     <template #user-dropdown>
       <UserDropdown
         :avatar
@@ -247,6 +270,7 @@ watch(
       />
     </template>
     <template #extra>
+      <RechargeModal ref="rechargeModalRef" />
       <AuthenticationLoginExpiredModal
         v-model:open="accessStore.loginExpired"
         :avatar
