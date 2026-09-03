@@ -10,11 +10,15 @@
 | --- | --- |
 | `apps/web-antd/` | Web/Desktop 共用的 Vue 3 + Vben Renderer |
 | `apps/backend-mock/` | Nitro Mock API |
+| `apps/desktop/` | Electron 主进程、preload 与安装包 |
+| `apps/desktop-plugins/` | 桌面原生插件；`browser` 用 Playwright 驱动系统 Chrome/Edge |
 | `packages/` | Vben 核心、集成层和通用包 |
 | `internal/` | 构建、TypeScript、lint 基础设施 |
 | `playground/` | 组件试验场 |
 | `ui-demo/` | 产品视觉原型 |
 | `docs/` | 架构、规格、计划和迁移记录 |
+
+页面只通过 `platformApi.browser` 调用桌面浏览器插件。未安装系统 Chrome/Edge 时不会回退 Playwright 自带 Chromium。
 
 ## 常用命令
 

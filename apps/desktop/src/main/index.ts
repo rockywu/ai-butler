@@ -17,6 +17,7 @@ import {
   RUNTIME_GET_INFO_CHANNEL,
 } from '../shared/channels';
 import { parseApiUrlFromArgv } from './parse-api-url';
+import { registerBrowserHandlers } from './plugins/plugin-host';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const developmentUrl =
@@ -44,6 +45,7 @@ function resolvePreloadPath(): string {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let browserSessionAvailable = (): boolean => false;
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -98,11 +100,16 @@ function registerRuntimeHandler(): void {
         };
       }
 
+      const capabilities = ['runtime.info'];
+      if (browserSessionAvailable()) {
+        capabilities.push('browser.session');
+      }
+
       return {
         data: {
           appVersion: app.getVersion(),
           arch: process.arch,
-          capabilities: ['runtime.info'],
+          capabilities,
           platform: process.platform,
           protocolVersion: PLATFORM_PROTOCOL_VERSION,
           target: 'desktop',
@@ -222,6 +229,12 @@ if (hasSingleInstanceLock) {
       registerRendererProtocol();
     }
     registerBootstrapHandler();
+    const browser = registerBrowserHandlers({
+      currentDirectory,
+      getMainWindow: () => mainWindow,
+      isTrustedSender,
+    });
+    browserSessionAvailable = browser.isBrowserSessionAvailable;
     registerRuntimeHandler();
     await showMainWindow();
   });

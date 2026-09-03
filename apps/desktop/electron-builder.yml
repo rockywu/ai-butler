@@ -12,6 +12,11 @@ files:
   - '!out/renderer-placeholder/**'
   - package.json
 
+asarUnpack:
+  - out/plugins/browser/**/*
+  - '**/node_modules/playwright/**'
+  - '**/node_modules/playwright-core/**'
+
 extraResources:
   - from: ../web-antd/dist/desktop
     to: renderer

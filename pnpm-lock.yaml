@@ -640,6 +640,13 @@ importers:
         version: 1.15.11
 
   apps/desktop:
+    dependencies:
+      '@ai-butler/desktop-plugin-protocol':
+        specifier: workspace:*
+        version: link:../desktop-plugins/protocol
+      playwright:
+        specifier: 'catalog:'
+        version: 1.61.1
     devDependencies:
       '@ai-butler/platform-api':
         specifier: workspace:*

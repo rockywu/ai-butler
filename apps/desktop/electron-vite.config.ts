@@ -8,17 +8,30 @@ const platformApiEntry = resolve(
   desktopRoot,
   '../../packages/platform-api/src/index.ts',
 );
+const pluginProtocolEntry = resolve(
+  desktopRoot,
+  '../desktop-plugins/protocol/src/index.ts',
+);
 
 export default defineConfig({
   main: {
     build: {
-      externalizeDeps: { exclude: ['@ai-butler/platform-api'] },
+      externalizeDeps: {
+        exclude: [
+          '@ai-butler/platform-api',
+          '@ai-butler/desktop-plugin-protocol',
+        ],
+      },
     },
     ssr: {
-      noExternal: ['@ai-butler/platform-api'],
+      noExternal: [
+        '@ai-butler/platform-api',
+        '@ai-butler/desktop-plugin-protocol',
+      ],
     },
     resolve: {
       alias: {
+        '@ai-butler/desktop-plugin-protocol': pluginProtocolEntry,
         '@ai-butler/platform-api': platformApiEntry,
       },
     },
