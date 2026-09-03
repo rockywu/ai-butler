@@ -332,7 +332,7 @@ watch(filterKey, () => {
             class="cursor-pointer rounded-full border px-2.5 py-[3px] text-[11px] transition-all"
             :class="
               filterKey === f.key
-                ? 'border-[#4B3FE3] bg-[#4B3FE3] text-white'
+                ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
                 : 'border-[#E5E7EB] bg-transparent text-[#6B7280] hover:border-[#D1D5DB]'
             "
             @click="filterKey = f.key"
@@ -345,7 +345,11 @@ watch(filterKey, () => {
             v-for="c in filteredConvs"
             :key="c.id"
             class="flex cursor-pointer items-start gap-2.5 border-b border-[#E5E7EB] px-3 py-2.5 transition-colors hover:bg-[#F9FAFB]"
-            :class="c.id === activeConvId ? '!bg-[#F3F1FF]' : ''"
+            :class="
+              c.id === activeConvId
+                ? '!bg-[#EBEBE6] shadow-[inset_3px_0_0_#0A0A0A]'
+                : ''
+            "
             @click="pickConv(c.id)"
           >
             <Avatar
@@ -484,7 +488,7 @@ watch(filterKey, () => {
                 class="rounded-[10px] border px-2.5 py-1.5 text-[12px] leading-relaxed whitespace-pre-wrap"
                 :class="
                   m.side === 'right'
-                    ? 'border-[#4B3FE3] bg-[#4B3FE3] text-white'
+                    ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
                     : 'border-[#E5E7EB] bg-white text-[#111827]'
                 "
               >
@@ -546,7 +550,7 @@ watch(filterKey, () => {
             class="cursor-pointer rounded-full border px-2.5 py-[3px] text-[11px] transition-all"
             :class="
               filterKey === f.key
-                ? 'border-[#4B3FE3] bg-[#4B3FE3] text-white'
+                ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
                 : 'border-[#E5E7EB] bg-transparent text-[#6B7280] hover:border-[#D1D5DB]'
             "
             @click="filterKey = f.key"
@@ -559,7 +563,11 @@ watch(filterKey, () => {
             v-for="c in filteredConvs"
             :key="c.id"
             class="flex cursor-pointer items-start gap-2.5 border-b border-[#E5E7EB] px-3 py-2.5 transition-colors hover:bg-[#F9FAFB]"
-            :class="c.id === activeConvId ? '!bg-[#F3F1FF]' : ''"
+            :class="
+              c.id === activeConvId
+                ? '!bg-[#EBEBE6] shadow-[inset_3px_0_0_#0A0A0A]'
+                : ''
+            "
             @click="pickConv(c.id)"
           >
             <Avatar
@@ -604,9 +612,11 @@ watch(filterKey, () => {
           </div>
         </div>
         <div
-          class="flex flex-wrap items-center gap-2 border-t border-dashed border-[#E5E7EB] px-3 py-2.5 text-[11px] text-[#6B7280]"
+          class="hidden flex-wrap items-center gap-2 border-t border-dashed border-[#E5E7EB] px-3 py-2.5 text-[11px] text-[#6B7280] md:flex"
         >
-          <Button size="small">🔔 模拟收到新私信</Button>
+          <Button size="small" @click="message.info('收到新私信 · 家居控小林')">
+            🔔 模拟收到新私信
+          </Button>
           <span>演示：客户端右下角弹出桌面通知</span>
         </div>
       </div>
@@ -710,7 +720,7 @@ watch(filterKey, () => {
                 class="rounded-[10px] border px-3 py-2 text-[12.5px] leading-relaxed whitespace-pre-wrap"
                 :class="
                   m.side === 'right'
-                    ? 'border-[#4B3FE3] bg-[#4B3FE3] text-white'
+                    ? 'border-[#0A0A0A] bg-[#0A0A0A] text-white'
                     : 'border-[#E5E7EB] bg-white text-[#111827]'
                 "
               >
@@ -739,8 +749,8 @@ watch(filterKey, () => {
               @press-enter.prevent="sendMessage"
             />
             <Button type="primary" size="large" @click="sendMessage">
-发送
-</Button>
+              发送
+            </Button>
           </div>
         </div>
       </div>
