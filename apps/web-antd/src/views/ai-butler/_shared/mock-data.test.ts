@@ -5,6 +5,8 @@ import {
   acqTaskCards,
   acqZoneCards,
   mockAccounts,
+  mockComments,
+  mockLiveComments,
   mockTasks,
   workbenchStats,
 } from './mock-data';
@@ -52,5 +54,12 @@ describe('acquisition mock tables', () => {
     expect(mockAccounts[0]?.nickname).toBe('小雅来啦');
     expect(mockTasks[0]?.id).toBe('T20260812001');
     expect(mockTasks[0]?.settings?.关键词).toBe('家居好物');
+  });
+});
+
+describe('lead detail mocks', () => {
+  it('includes demo comment and live rows', () => {
+    expect(mockComments[0]?.name).toBe('Dy丁大帅');
+    expect(mockLiveComments[0]?.room).toBe('品牌大促专场');
   });
 });

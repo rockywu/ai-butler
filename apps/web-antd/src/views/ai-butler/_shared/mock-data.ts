@@ -606,3 +606,231 @@ export const mockKeywordPresets: MockKeywordPreset[] = [
     createdAt: '2026-08-11 10:30',
   },
 ];
+
+export interface MockComment {
+  content: string;
+  follow: string;
+  id: string;
+  ip: string;
+  letter: string;
+  msg: string;
+  name: string;
+  time: string;
+  type: string;
+  video: string;
+}
+
+export interface MockLiveComment {
+  content: string;
+  follow: string;
+  gender: string;
+  id: string;
+  letter: string;
+  msg: string;
+  name: string;
+  room: string;
+  time: string;
+}
+
+export interface MockInteract {
+  action: string;
+  content: string;
+  id: string;
+  letter: string;
+  name: string;
+  status: string;
+  time: string;
+}
+
+export interface MockFan {
+  createdAt: string;
+  fans: number;
+  followBack: string;
+  follows: number;
+  id: string;
+  letter: string;
+  likes: number;
+  msg: string;
+  name: string;
+  signature: string;
+  status: string;
+  works: number;
+}
+
+export const mockLiveComments: MockLiveComment[] = [
+  {
+    id: 'lc1',
+    room: '品牌大促专场',
+    name: '快乐星猫',
+    letter: '快',
+    gender: '女',
+    content: '主播多少钱呀？',
+    msg: '已私信',
+    follow: '未关注',
+    time: '2026-08-12 20:15',
+  },
+  {
+    id: 'lc2',
+    room: '品牌大促专场',
+    name: '山风',
+    letter: '山',
+    gender: '男',
+    content: '有优惠吗',
+    msg: '已私信',
+    follow: '已关注',
+    time: '2026-08-12 20:18',
+  },
+  {
+    id: 'lc3',
+    room: '新品首发直播',
+    name: '柠檬不酸',
+    letter: '柠',
+    gender: '女',
+    content: '求链接！！',
+    msg: '未私信',
+    follow: '未关注',
+    time: '2026-08-11 21:02',
+  },
+];
+
+export const mockComments: MockComment[] = [
+  {
+    id: 'cm1',
+    video: '中概时代·门店探店vlog',
+    type: '关键词',
+    letter: '帅',
+    name: 'Dy丁大帅',
+    content: '中概时代门店欢迎光临，地址在哪呀？',
+    ip: '上海',
+    msg: '未私信',
+    follow: '未关注',
+    time: '2026-08-07 13:07',
+  },
+  {
+    id: 'cm2',
+    video: '中概时代·门店探店vlog',
+    type: '关键词',
+    letter: '咖',
+    name: '咖啡啥啥甜',
+    content: '不是9号吗？怎么改成8号了',
+    ip: '上海',
+    msg: '已私信',
+    follow: '未关注',
+    time: '2026-08-06 21:38',
+  },
+  {
+    id: 'cm3',
+    video: '减脂期运动跟练Day3',
+    type: '视频',
+    letter: 'H',
+    name: 'Horizon',
+    content: '走路最多，消耗的60-70%都是…求计划',
+    ip: '重庆',
+    msg: '已私信',
+    follow: '已关注',
+    time: '2026-08-06 21:45',
+  },
+];
+
+export const mockInteracts: MockInteract[] = [
+  {
+    id: 'ir1',
+    letter: '星',
+    name: '星辰大海',
+    action: '私信',
+    content: '您好，这款产品适合新手吗？→ 已发送引导话术',
+    time: '10:15',
+    status: '成功',
+  },
+  {
+    id: 'ir2',
+    letter: '北',
+    name: '一路向北',
+    action: '关注',
+    content: '-',
+    time: '10:12',
+    status: '成功',
+  },
+  {
+    id: 'ir3',
+    letter: '丸',
+    name: '小丸子不甜',
+    action: '评论回复',
+    content: '可以的，我把重点信息整理给你参考',
+    time: '10:08',
+    status: '待复核',
+  },
+  {
+    id: 'ir4',
+    letter: '玩',
+    name: '科技小玩家',
+    action: '点赞',
+    content: '-',
+    time: '09:56',
+    status: '成功',
+  },
+];
+
+export const mockFans: MockFan[] = [
+  {
+    id: 'f1',
+    name: '星辰大海',
+    letter: '星',
+    signature: '热爱生活，喜欢分享',
+    fans: 128,
+    follows: 56,
+    works: 12,
+    likes: 340,
+    status: '正常',
+    msg: '已私信',
+    followBack: '已关注',
+    createdAt: '2026-08-12 15:30',
+  },
+  {
+    id: 'f2',
+    name: '一路向北',
+    letter: '北',
+    signature: '在路上',
+    fans: 45,
+    follows: 120,
+    works: 8,
+    likes: 89,
+    status: '正常',
+    msg: '未私信',
+    followBack: '未关注',
+    createdAt: '2026-08-12 14:20',
+  },
+  {
+    id: 'f3',
+    name: '小丸子不甜',
+    letter: '丸',
+    signature: '每天开心一点点',
+    fans: 890,
+    follows: 210,
+    works: 36,
+    likes: 2300,
+    status: '正常',
+    msg: '未私信',
+    followBack: '未关注',
+    createdAt: '2026-08-11 19:44',
+  },
+];
+
+export const acqRegionOptions = [
+  '不限',
+  '北京市',
+  '上海市',
+  '广东省',
+  '浙江省',
+  '江苏省',
+  '四川省',
+].map((value) => ({ label: value, value }));
+
+export function getAcqAccountOptions(platform: string) {
+  return mockAccounts
+    .filter((account) => account.platform === platform)
+    .map((account) => ({
+      label: account.nickname,
+      value: account.nickname,
+    }));
+}

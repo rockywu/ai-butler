@@ -7,9 +7,19 @@ import { pageGapClass } from '../_shared/chic-classes';
 import { acqLeadCards, acqTaskCards, acqZoneCards } from '../_shared/mock-data';
 import ActionCard from './action-card.vue';
 import AccountModal from './modals/account-modal.vue';
+import AcqCompetitorModal from './modals/acq-competitor-modal.vue';
+import AcqFanModal from './modals/acq-fan-modal.vue';
+import AcqKeywordModal from './modals/acq-keyword-modal.vue';
+import AcqLiveModal from './modals/acq-live-modal.vue';
+import AcqVideoModal from './modals/acq-video-modal.vue';
 import AuthModal from './modals/auth-modal.vue';
+import BatchModal from './modals/batch-modal.vue';
+import CommentModal from './modals/comment-modal.vue';
+import FanListModal from './modals/fan-list-modal.vue';
 import GuideModal from './modals/guide-modal.vue';
+import InteractModal from './modals/interact-modal.vue';
 import KeywordModal from './modals/keyword-modal.vue';
+import LiveCommentModal from './modals/live-comment-modal.vue';
 import NoticeModal from './modals/notice-modal.vue';
 import OverviewModal from './modals/overview-modal.vue';
 import ProcessModal from './modals/process-modal.vue';
@@ -75,12 +85,32 @@ const processModalRef = ref<ModalExpose>();
 const tasksModalRef = ref<ModalExpose>();
 const authModalRef = ref<ModalExpose>();
 const taskDetailModalRef = ref<ModalExpose>();
+const interactModalRef = ref<ModalExpose>();
+const commentModalRef = ref<ModalExpose>();
+const liveCommentModalRef = ref<ModalExpose>();
+const fanListModalRef = ref<ModalExpose>();
+const batchModalRef = ref<ModalExpose>();
+const acqCompetitorModalRef = ref<ModalExpose>();
+const acqVideoModalRef = ref<ModalExpose>();
+const acqKeywordModalRef = ref<ModalExpose>();
+const acqLiveModalRef = ref<ModalExpose>();
+const acqFanModalRef = ref<ModalExpose>();
 
 const modalRefMap: Record<string, typeof overviewModalRef> = {
   'auth-modal': authModalRef,
   'm-account': accountModalRef,
+  'm-acq-competitor': acqCompetitorModalRef,
+  'm-acq-fan': acqFanModalRef,
+  'm-acq-keyword': acqKeywordModalRef,
+  'm-acq-live': acqLiveModalRef,
+  'm-acq-video': acqVideoModalRef,
+  'm-batch': batchModalRef,
+  'm-comment': commentModalRef,
+  'm-fan': fanListModalRef,
   'm-guide': guideModalRef,
+  'm-interact': interactModalRef,
   'm-keyword': keywordModalRef,
+  'm-live': liveCommentModalRef,
   'm-notice': noticeModalRef,
   'm-overview': overviewModalRef,
   'm-process': processModalRef,
@@ -258,5 +288,15 @@ provide('accountModalTitle', accountModalTitle);
     <TasksModal ref="tasksModalRef" />
     <AuthModal ref="authModalRef" />
     <TaskDetailModal ref="taskDetailModalRef" />
+    <InteractModal ref="interactModalRef" />
+    <CommentModal ref="commentModalRef" />
+    <LiveCommentModal ref="liveCommentModalRef" />
+    <FanListModal ref="fanListModalRef" />
+    <BatchModal ref="batchModalRef" />
+    <AcqCompetitorModal ref="acqCompetitorModalRef" />
+    <AcqVideoModal ref="acqVideoModalRef" />
+    <AcqKeywordModal ref="acqKeywordModalRef" />
+    <AcqLiveModal ref="acqLiveModalRef" />
+    <AcqFanModal ref="acqFanModalRef" />
   </div>
 </template>
