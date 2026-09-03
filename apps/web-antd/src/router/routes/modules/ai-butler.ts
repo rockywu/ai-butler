@@ -9,77 +9,77 @@ const routes: RouteRecordRaw[] = [
     name: 'AiButler',
     path: '/ai-butler',
     redirect: '/ai-butler/workbench',
+  },
+  {
+    name: 'AiButlerWorkbench',
+    path: '/ai-butler/workbench',
+    component: () => import('#/views/ai-butler/workbench/index.vue'),
+    meta: {
+      icon: 'lucide:house',
+      order: 1,
+      title: '工作台',
+    },
+  },
+  {
+    name: 'AiButlerGrowth',
+    path: '/ai-butler/growth',
+    redirect: '/ai-butler/acquisition',
+    meta: {
+      icon: 'lucide:target',
+      order: 2,
+      title: 'AI 智能获客',
+    },
     children: [
       {
-        name: 'AiButlerWorkbench',
-        path: 'workbench',
-        component: () => import('#/views/ai-butler/workbench/index.vue'),
-        meta: {
-          icon: 'lucide:house',
-          order: 1,
-          title: '工作台',
-        },
-      },
-      {
-        name: 'AiButlerGrowth',
-        path: 'growth',
-        redirect: '/ai-butler/acquisition',
+        name: 'AiButlerAcquisition',
+        path: '/ai-butler/acquisition',
+        component: () => import('#/views/ai-butler/acquisition/index.vue'),
         meta: {
           icon: 'lucide:target',
-          order: 2,
-          title: 'AI 智能获客',
-        },
-        children: [
-          {
-            name: 'AiButlerAcquisition',
-            path: '/ai-butler/acquisition',
-            component: () => import('#/views/ai-butler/acquisition/index.vue'),
-            meta: {
-              icon: 'lucide:target',
-              title: '智能获客',
-            },
-          },
-          {
-            name: 'AiButlerChat',
-            path: '/ai-butler/chat',
-            component: () => import('#/views/ai-butler/chat/index.vue'),
-            meta: {
-              icon: 'lucide:message-circle',
-              title: '聊天接管',
-            },
-          },
-          {
-            name: 'AiButlerContacts',
-            path: '/ai-butler/contacts',
-            component: () => import('#/views/ai-butler/contacts/index.vue'),
-            meta: {
-              icon: 'lucide:users',
-              title: '联系列表',
-            },
-          },
-        ],
-      },
-      {
-        name: 'AiButlerDigital',
-        path: 'digital',
-        component: () => import('#/views/ai-butler/digital/index.vue'),
-        meta: {
-          icon: 'lucide:mic',
-          order: 3,
-          title: '数字人',
+          title: '智能获客',
         },
       },
       {
-        name: 'AiButlerVideo',
-        path: 'video',
-        component: () => import('#/views/ai-butler/video/index.vue'),
+        name: 'AiButlerChat',
+        path: '/ai-butler/chat',
+        component: () => import('#/views/ai-butler/chat/index.vue'),
         meta: {
-          icon: 'lucide:film',
-          order: 4,
-          title: '文生视频',
+          icon: 'lucide:message-circle',
+          title: '聊天接管',
+        },
+      },
+      {
+        name: 'AiButlerContacts',
+        path: '/ai-butler/contacts',
+        component: () => import('#/views/ai-butler/contacts/index.vue'),
+        meta: {
+          icon: 'lucide:users',
+          title: '联系列表',
         },
       },
     ],
+  },
+  {
+    name: 'AiButlerDigital',
+    path: '/ai-butler/digital',
+    component: () => import('#/views/ai-butler/digital/index.vue'),
+    meta: {
+      hideInMenu: true,
+      icon: 'lucide:mic',
+      order: 3,
+      title: '数字人',
+    },
+  },
+  {
+    name: 'AiButlerVideo',
+    path: '/ai-butler/video',
+    component: () => import('#/views/ai-butler/video/index.vue'),
+    meta: {
+      hideInMenu: true,
+      icon: 'lucide:film',
+      order: 4,
+      title: '文生视频',
+    },
   },
   {
     name: 'Profile',

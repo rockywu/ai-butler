@@ -24,8 +24,8 @@ AI Butler 是面向 Web、Windows 和 macOS 的 AI 超级员工产品。
 
 ```bash
 pnpm install
-pnpm dev:mock    # 独立 Mock :5320
-pnpm dev:antd    # Mock + Web
+pnpm dev:mock    # 独立 Mock :5320（需手动先开）
+pnpm dev:antd    # 只起 Web :5666
 pnpm build:antd
 pnpm check
 pnpm test:unit

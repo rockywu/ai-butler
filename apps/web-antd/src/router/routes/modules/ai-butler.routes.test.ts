@@ -1,3 +1,5 @@
+import { generateMenus } from '@vben/utils';
+
 import { describe, expect, it } from 'vitest';
 
 import aiButler from './ai-butler';
@@ -27,12 +29,23 @@ describe('ai-butler routes', () => {
     expect(names).toContain('Profile');
   });
 
-  it('keeps workbench digital video as top-level menu items', () => {
-    const root = aiButler.find((r) => r.name === 'AiButler');
-    const childTitles = (root?.children ?? []).map((c) => c.meta?.title);
-    expect(childTitles).toContain('工作台');
-    expect(childTitles).toContain('AI 智能获客');
-    expect(childTitles).toContain('数字人');
-    expect(childTitles).toContain('文生视频');
+  it('keeps workbench and growth as top-level menu items', () => {
+    const mockRouter = {
+      getRoutes: () =>
+        flatten(aiButler).map((r) => ({ name: r.name, path: r.path })),
+    };
+    const menus = generateMenus(aiButler, mockRouter as never);
+    const names = menus.map((m) => m.name);
+    expect(names).toEqual(['工作台', 'AI 智能获客']);
+    expect(names).not.toContain('数字人');
+    expect(names).not.toContain('文生视频');
+    expect(names).not.toContain('Root');
+    expect(names).not.toContain('阿斯系统');
+    const growth = menus.find((m) => m.name === 'AI 智能获客');
+    expect(growth?.children?.map((c) => c.name)).toEqual([
+      '智能获客',
+      '聊天接管',
+      '联系列表',
+    ]);
   });
 });

@@ -9,7 +9,7 @@
     "build": "node ./scripts/ensure-electron.mjs && node ./scripts/emit-browser-plugin.mjs && electron-vite build && node ./scripts/emit-preload-cjs.mjs",
     "build:mac": "electron-builder --mac --dir --publish never",
     "build:windows": "electron-builder --win --x64 --dir --publish never",
-    "dev": "node ./scripts/ensure-electron.mjs && node ./scripts/emit-browser-plugin.mjs && node ./scripts/emit-preload-cjs.mjs && wait-on tcp:127.0.0.1:5666 && cross-env AI_BUTLER_RENDERER_URL=http://127.0.0.1:5666 electron-vite dev",
+    "dev": "node ./scripts/ensure-electron.mjs && node ./scripts/emit-browser-plugin.mjs && node ./scripts/emit-preload-cjs.mjs && node ./scripts/wait-for-renderer.mjs && node ./scripts/electron-vite-dev.mjs",
     "emit:plugin": "node ./scripts/emit-browser-plugin.mjs",
     "emit:preload": "node ./scripts/emit-preload-cjs.mjs",
     "dist:mac": "electron-builder --mac --publish never",
@@ -17,10 +17,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-butler/desktop-plugin-protocol": "workspace:*",
     "playwright": "catalog:"
   },
   "devDependencies": {
+    "@ai-butler/desktop-plugin-protocol": "workspace:*",
     "@ai-butler/platform-api": "workspace:*",
     "@types/node": "catalog:",
     "@vben/tsconfig": "workspace:*",

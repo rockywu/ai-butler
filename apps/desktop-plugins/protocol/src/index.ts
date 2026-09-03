@@ -1,10 +1,10 @@
-export { PluginClient, PluginClientError } from './client';
-export type { PluginTransport } from './client';
+export { PluginClient, PluginClientError } from './client.ts';
+export type { PluginTransport } from './client.ts';
 export {
   encodeEnvelope,
   parseEnvelope,
   PLUGIN_PROTOCOL_VERSION,
-} from './envelope';
+} from './envelope.ts';
 export type {
   PluginEnvelope,
   PluginError,
@@ -12,4 +12,4 @@ export type {
   PluginMethod,
   PluginRequest,
   PluginResponse,
-} from './envelope';
+} from './envelope.ts';

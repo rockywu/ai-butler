@@ -36,12 +36,12 @@
 ```bash
 pnpm install                 # 安装依赖（postinstall 会跑各包的 stub）
 pnpm dev                     # 交互式选择要启动的应用（turbo-run）
-pnpm dev:mock                # 独立启动 Nitro Mock API，端口 5320
-pnpm dev:antd                # concurrently 启动 Mock + 主应用 web-antd（端口 5666）
+pnpm dev:mock                # 独立启动 Nitro Mock API，端口 5320（需手动先开）
+pnpm dev:antd                # 只启动主应用 web-antd（端口 5666）
 pnpm dev:web                 # 只启动 web-antd（需已有 Mock 或真实后端）
 pnpm dev:desktop             # 只启动 Electron（需 Web 已在 5666）
-pnpm dev:desktop:mac         # concurrently 启动 Mock + Web + Electron（macOS 本机）
-pnpm dev:desktop:windows     # concurrently 启动 Mock + Web + Electron（Windows 本机）
+pnpm dev:desktop:mac         # concurrently 启动 Web + Electron（macOS 本机）
+pnpm dev:desktop:windows     # concurrently 启动 Web + Electron（Windows 本机）
 pnpm dev:play                # 启动 playground
 
 pnpm build                   # 构建全部（turbo，NODE_OPTIONS=--max-old-space-size=8192）
@@ -55,7 +55,7 @@ pnpm preview                 # 构建后预览
 pnpm clean                   # 清理产物；pnpm reinstall 会连 lockfile 一起重装
 ```
 
-Mock 是**独立进程服务**（`apps/backend-mock`），默认端口 5320。`VITE_NITRO_MOCK=false`，不再由 Vite 插件内嵌拉起。`dev:antd` / `dev:desktop:mac` / `dev:desktop:windows` 通过 `concurrently` 一并启动 Mock；也可单独 `pnpm dev:mock`，再 `pnpm dev:web`，最后 `pnpm dev:desktop`。Web 仍经 Vite 将 `/api` 代理到 `localhost:5320`。Desktop 打包应用需加 `--api-url=http://localhost:5320/api` 直连 Mock 以验证登录。`build:desktop:mac` / `build:desktop:windows` 使用 `--dir`，只产出可运行目录、不打安装包，便于本机打开测试。
+Mock 是**独立进程服务**（`apps/backend-mock`），默认端口 5320。`VITE_NITRO_MOCK=false`，不再由 Vite 插件内嵌拉起。所有 `dev:*` 组合启动项都不拉 Mock，需要时先手动 `pnpm dev:mock`。Web 仍经 Vite 将 `/api` 代理到 `localhost:5320`。Desktop 打包应用需加 `--api-url=http://localhost:5320/api` 直连 Mock 以验证登录。`build:desktop:mac` / `build:desktop:windows` 使用 `--dir`，只产出可运行目录、不打安装包，便于本机打开测试。
 
 ### 检查与测试
 

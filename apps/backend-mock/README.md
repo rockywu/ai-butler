@@ -9,13 +9,11 @@ AI Butler / Vben 本地 Mock API 服务。不连接真实数据库，数据均�
 在仓库根目录：
 
 ```bash
-# 只起 Mock
+# 只起 Mock（Web / Desktop 开发前需手动先开）
 pnpm dev:mock
 
-# Web 开发（会同时拉起 Mock + Vite）
-pnpm dev:antd
-
 # 只起 Web（需已有 Mock，或对接真实后端）
+pnpm dev:antd
 pnpm dev:web
 ```
 

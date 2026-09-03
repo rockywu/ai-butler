@@ -1,6 +1,6 @@
-import type { PluginError, PluginMethod } from './envelope';
+import type { PluginError, PluginMethod } from './envelope.ts';
 
-import { parseEnvelope, PLUGIN_PROTOCOL_VERSION } from './envelope';
+import { parseEnvelope, PLUGIN_PROTOCOL_VERSION } from './envelope.ts';
 
 export interface PluginTransport {
   kill: () => void;
@@ -34,8 +34,10 @@ export class PluginClient {
   >();
   private nextId = 1;
   private readonly pending = new Map<string, PendingRequest>();
+  private readonly transport: PluginTransport;
 
-  constructor(private readonly transport: PluginTransport) {
+  constructor(transport: PluginTransport) {
+    this.transport = transport;
     transport.onMessage((message) => {
       this.handleMessage(message);
     });

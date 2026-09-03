@@ -23,6 +23,18 @@ export default defineConfig({
         ],
       },
     },
+    plugins: [
+      {
+        enforce: 'pre',
+        name: 'bundle-desktop-plugin-protocol',
+        resolveId(id) {
+          if (id === '@ai-butler/desktop-plugin-protocol') {
+            return pluginProtocolEntry;
+          }
+          return undefined;
+        },
+      },
+    ],
     ssr: {
       noExternal: [
         '@ai-butler/platform-api',
