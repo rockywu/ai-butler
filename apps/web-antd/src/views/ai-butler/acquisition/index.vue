@@ -6,10 +6,27 @@ import { message } from 'ant-design-vue';
 import { pageGapClass } from '../_shared/chic-classes';
 import { acqLeadCards, acqTaskCards, acqZoneCards } from '../_shared/mock-data';
 import ActionCard from './action-card.vue';
+import AccountModal from './modals/account-modal.vue';
+import AuthModal from './modals/auth-modal.vue';
+import GuideModal from './modals/guide-modal.vue';
+import KeywordModal from './modals/keyword-modal.vue';
+import NoticeModal from './modals/notice-modal.vue';
+import OverviewModal from './modals/overview-modal.vue';
+import ProcessModal from './modals/process-modal.vue';
+import ReplyModal from './modals/reply-modal.vue';
+import TaskDetailModal from './modals/task-detail-modal.vue';
+import TasksModal from './modals/tasks-modal.vue';
 import SmartIcons from './smart-icons.vue';
 
 type PlatformKey = 'douyin' | 'kuaishou' | 'xiaohongshu';
-type OpenModalFn = (key: string) => void;
+type OpenModalFn = (key: string, data?: unknown) => void;
+type ModalExpose = {
+  modalApi: {
+    open: () => void;
+    setData: (data: unknown) => void;
+    setState: (state: Record<string, unknown>) => void;
+  };
+};
 
 const PLATFORM_LABEL: Record<PlatformKey, string> = {
   douyin: '某音',
@@ -48,13 +65,44 @@ const accountModalTitle = computed(
   () => `账号管理 · ${PLATFORM_LABEL[activePlatform.value]}`,
 );
 
-function openModal(_key: string) {
-  // 任务 6/7 接入弹窗内容
+const overviewModalRef = ref<ModalExpose>();
+const noticeModalRef = ref<ModalExpose>();
+const guideModalRef = ref<ModalExpose>();
+const accountModalRef = ref<ModalExpose>();
+const replyModalRef = ref<ModalExpose>();
+const keywordModalRef = ref<ModalExpose>();
+const processModalRef = ref<ModalExpose>();
+const tasksModalRef = ref<ModalExpose>();
+const authModalRef = ref<ModalExpose>();
+const taskDetailModalRef = ref<ModalExpose>();
+
+const modalRefMap: Record<string, typeof overviewModalRef> = {
+  'auth-modal': authModalRef,
+  'm-account': accountModalRef,
+  'm-guide': guideModalRef,
+  'm-keyword': keywordModalRef,
+  'm-notice': noticeModalRef,
+  'm-overview': overviewModalRef,
+  'm-process': processModalRef,
+  'm-reply': replyModalRef,
+  'm-tasks': tasksModalRef,
+  'task-detail-modal': taskDetailModalRef,
+};
+
+function openModal(key: string, data?: unknown) {
+  const api = modalRefMap[key]?.value?.modalApi;
+  if (!api) return;
+  if (data !== undefined) {
+    api.setData(data);
+  }
+  api.open();
 }
 
 function switchPlatform(key: PlatformKey) {
   activePlatform.value = key;
-  message.info(`已切换至${PLATFORM_LABEL[key]} · 账号与任务数据按平台过滤`);
+  const label = PLATFORM_LABEL[key];
+  message.info(`已切换至${label} · 账号与任务数据按平台过滤`);
+  accountModalRef.value?.modalApi.setState({ title: `账号管理 · ${label}` });
 }
 
 provide<OpenModalFn>('openModal', openModal);
@@ -199,5 +247,16 @@ provide('accountModalTitle', accountModalTitle);
         @click="openModal(card.modalKey)"
       />
     </div>
+
+    <OverviewModal ref="overviewModalRef" />
+    <NoticeModal ref="noticeModalRef" />
+    <GuideModal ref="guideModalRef" />
+    <AccountModal ref="accountModalRef" />
+    <ReplyModal ref="replyModalRef" />
+    <KeywordModal ref="keywordModalRef" />
+    <ProcessModal ref="processModalRef" />
+    <TasksModal ref="tasksModalRef" />
+    <AuthModal ref="authModalRef" />
+    <TaskDetailModal ref="taskDetailModalRef" />
   </div>
 </template>

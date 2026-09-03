@@ -4,6 +4,8 @@ import {
   acqLeadCards,
   acqTaskCards,
   acqZoneCards,
+  mockAccounts,
+  mockTasks,
   workbenchStats,
 } from './mock-data';
 
@@ -41,5 +43,14 @@ describe('acquisition cards', () => {
       'live',
       'fan',
     ]);
+  });
+});
+
+describe('acquisition mock tables', () => {
+  it('loads demo accounts and tasks', () => {
+    expect(mockAccounts).toHaveLength(5);
+    expect(mockAccounts[0]?.nickname).toBe('小雅来啦');
+    expect(mockTasks[0]?.id).toBe('T20260812001');
+    expect(mockTasks[0]?.settings?.关键词).toBe('家居好物');
   });
 });
