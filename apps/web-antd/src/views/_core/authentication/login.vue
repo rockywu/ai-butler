@@ -1,98 +1,229 @@
 <script lang="ts" setup>
-import type { VbenFormSchema } from '@vben/common-ui';
-import type { BasicOption } from '@vben/types';
+import type { VbenFormSchema } from '@vben-core/form-ui';
 
-import { computed, markRaw } from 'vue';
+import type { LoginTab } from '#/views/ai-butler/_shared/login-payload';
 
-import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
-import { $t } from '@vben/locales';
+import { onBeforeUnmount, ref } from 'vue';
+
+import { useVbenForm } from '@vben-core/form-ui';
+import { VbenButton, VbenCheckbox } from '@vben-core/shadcn-ui';
+
+import { message } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
+import { toAuthLoginPayload } from '#/views/ai-butler/_shared/login-payload';
 
 defineOptions({ name: 'Login' });
 
 const authStore = useAuthStore();
+const activeTab = ref<LoginTab>('code');
+const agreed = ref(true);
+const countdown = ref(0);
+let countdownTimer: ReturnType<typeof setInterval> | undefined;
+const loginTabs: Array<{ label: string; value: LoginTab }> = [
+  { label: '验证码登录', value: 'code' },
+  { label: '密码登录', value: 'pwd' },
+];
 
-const MOCK_USER_OPTIONS: BasicOption[] = [
+const codeSchema: VbenFormSchema[] = [
   {
-    label: 'Super',
-    value: 'vben',
+    component: 'VbenInput',
+    componentProps: {
+      placeholder: '请输入手机号',
+    },
+    fieldName: 'phone',
+    label: '手机号',
+    rules: 'required',
   },
   {
-    label: 'Admin',
-    value: 'admin',
-  },
-  {
-    label: 'User',
-    value: 'jack',
+    component: 'VbenInput',
+    componentProps: {
+      placeholder: '请输入验证码',
+    },
+    fieldName: 'code',
+    label: '验证码',
+    rules: 'required',
   },
 ];
 
-const formSchema = computed((): VbenFormSchema[] => {
-  return [
-    {
-      component: 'VbenSelect',
-      componentProps: {
-        options: MOCK_USER_OPTIONS,
-        placeholder: $t('authentication.selectAccount'),
-      },
-      fieldName: 'selectAccount',
-      label: $t('authentication.selectAccount'),
-      rules: z
-        .string()
-        .min(1, { message: $t('authentication.selectAccount') })
-        .optional()
-        .default('vben'),
+const pwdSchema: VbenFormSchema[] = [
+  {
+    component: 'VbenInput',
+    componentProps: {
+      placeholder: '请输入手机号',
     },
-    {
-      component: 'VbenInput',
-      componentProps: {
-        placeholder: $t('authentication.usernameTip'),
-      },
-      dependencies: {
-        trigger(values, form) {
-          if (values.selectAccount) {
-            const findUser = MOCK_USER_OPTIONS.find(
-              (item) => item.value === values.selectAccount,
-            );
-            if (findUser) {
-              form.setValues({
-                password: '123456',
-                username: findUser.value,
-              });
-            }
-          }
-        },
-        triggerFields: ['selectAccount'],
-      },
-      fieldName: 'username',
-      label: $t('authentication.username'),
-      rules: z.string().min(1, { message: $t('authentication.usernameTip') }),
+    fieldName: 'phone',
+    label: '手机号',
+    rules: 'required',
+  },
+  {
+    component: 'VbenInputPassword',
+    componentProps: {
+      placeholder: '请输入密码',
     },
-    {
-      component: 'VbenInputPassword',
-      componentProps: {
-        placeholder: $t('authentication.password'),
-      },
-      fieldName: 'password',
-      label: $t('authentication.password'),
-      rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
-    },
-    {
-      component: markRaw(SliderCaptcha),
-      fieldName: 'captcha',
-      rules: z.boolean().refine((value) => value, {
-        message: $t('authentication.verifyRequiredTip'),
-      }),
-    },
-  ];
+    fieldName: 'password',
+    label: '密码',
+    rules: 'required',
+  },
+];
+
+const commonFormConfig = {
+  commonConfig: {
+    hideLabel: true,
+    hideRequiredMark: true,
+  },
+  showDefaultActions: false,
+};
+
+const [CodeForm, codeFormApi] = useVbenForm({
+  ...commonFormConfig,
+  schema: codeSchema,
+});
+const [PwdForm, pwdFormApi] = useVbenForm({
+  ...commonFormConfig,
+  schema: pwdSchema,
+});
+
+async function handleSubmit() {
+  if (!agreed.value) {
+    message.warning('请先阅读并同意服务协议和隐私政策');
+    return;
+  }
+
+  const formApi = activeTab.value === 'code' ? codeFormApi : pwdFormApi;
+  const { valid } = await formApi.validate();
+  if (!valid) return;
+
+  const values = await formApi.getValues();
+  const payload = toAuthLoginPayload({
+    tab: activeTab.value,
+    phone: String(values.phone ?? ''),
+    code: String(values.code ?? ''),
+    password: String(values.password ?? ''),
+  });
+  await authStore.authLogin(payload);
+}
+
+function sendCode() {
+  if (countdown.value > 0) return;
+
+  message.success('验证码已发送（演示）');
+  countdown.value = 60;
+  countdownTimer = setInterval(() => {
+    countdown.value -= 1;
+    if (countdown.value <= 0 && countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = undefined;
+    }
+  }, 1000);
+}
+
+function showAgreement() {
+  message.info('演示：协议文本');
+}
+
+onBeforeUnmount(() => {
+  if (countdownTimer) clearInterval(countdownTimer);
 });
 </script>
 
 <template>
-  <AuthenticationLogin
-    :form-schema="formSchema"
-    :loading="authStore.loginLoading"
-    @submit="authStore.authLogin"
-  />
+  <main
+    class="grid min-h-full place-items-center overflow-y-auto bg-[#F4F4F1] bg-[linear-gradient(rgba(10,10,10,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(10,10,10,0.035)_1px,transparent_1px)] bg-[size:28px_28px] p-6"
+    @keydown.enter.prevent="handleSubmit"
+  >
+    <section class="w-full max-w-[400px]">
+      <header class="mb-[22px] flex items-center justify-center gap-3">
+        <div
+          class="grid size-[45px] place-items-center rounded-lg border border-[#0A0A0A] bg-[#0A0A0A] text-[15px] font-bold tracking-[-0.04em] text-white shadow-[5px_5px_0_#D8D7D0]"
+        >
+          AS
+        </div>
+        <div>
+          <h1
+            class="text-[21px] font-bold leading-tight tracking-[-0.03em] text-[#0A0A0A]"
+          >
+            阿斯系统
+          </h1>
+          <p class="text-[11px] text-[#77736B]">智能增长中枢 · V1.0</p>
+        </div>
+      </header>
+
+      <div
+        class="rounded-[18px] border border-[#D1D0C9] bg-white px-6 py-[26px] shadow-[0_18px_50px_rgba(10,10,10,0.09)]"
+      >
+        <div
+          class="mb-4 flex gap-1 rounded-xl border border-[#E2E1DB] bg-[#F0F0EC] p-1"
+        >
+          <button
+            v-for="tab in loginTabs"
+            :key="tab.value"
+            class="flex-1 rounded-lg px-3 py-2 text-[13px] transition-colors"
+            :class="
+              activeTab === tab.value
+                ? 'bg-[#0A0A0A] font-semibold text-white'
+                : 'text-[#77736B] hover:text-[#0A0A0A]'
+            "
+            type="button"
+            @click="activeTab = tab.value"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-[13px]">
+          <CodeForm v-if="activeTab === 'code'" />
+          <PwdForm v-else />
+
+          <VbenButton
+            v-if="activeTab === 'code'"
+            class="w-full"
+            :disabled="countdown > 0"
+            variant="outline"
+            @click="sendCode"
+          >
+            {{ countdown > 0 ? `${countdown}s 后重新获取` : '获取验证码' }}
+          </VbenButton>
+
+          <VbenButton
+            :loading="authStore.loginLoading"
+            aria-label="login"
+            class="w-full bg-[#0A0A0A] shadow-[4px_4px_0_#D6D5CF] hover:bg-[#242424]"
+            @click="handleSubmit"
+          >
+            登 录
+          </VbenButton>
+
+          <VbenCheckbox v-model="agreed" name="agreement">
+            <span class="text-xs leading-relaxed text-[#77736B]">
+              我已阅读并同意
+              <button
+                class="text-[#0A0A0A] underline underline-offset-2"
+                type="button"
+                @click.stop="showAgreement"
+              >
+                《服务协议》
+              </button>
+              和
+              <button
+                class="text-[#0A0A0A] underline underline-offset-2"
+                type="button"
+                @click.stop="showAgreement"
+              >
+                《隐私政策》
+              </button>
+            </span>
+          </VbenCheckbox>
+        </div>
+      </div>
+
+      <div
+        class="mt-[15px] rounded-xl border border-dashed border-[#C9C8C1] bg-[#F0F0EC] px-3 py-2 text-center text-xs leading-relaxed text-[#5B5B56]"
+      >
+        🖥 首次登录将自动绑定当前设备：WIN-001
+        <br />
+        登录后登录态保存在本机，再次打开免登录
+      </div>
+    </section>
+  </main>
 </template>

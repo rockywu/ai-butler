@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@ai-butler/platform-api": "workspace:*",
+    "@vben-core/form-ui": "workspace:*",
+    "@vben-core/shadcn-ui": "workspace:*",
     "@vben/access": "workspace:*",
     "@vben/common-ui": "workspace:*",
     "@vben/constants": "workspace:*",
