@@ -834,3 +834,106 @@ export function getAcqAccountOptions(platform: string) {
       value: account.nickname,
     }));
 }
+
+export interface MockContact {
+  ava: string;
+  channel: string;
+  id: string;
+  lastInteract: string;
+  name: string;
+  phone: string;
+  platform: string;
+  source: string;
+  status: string;
+}
+
+export const mockContacts: MockContact[] = [
+  {
+    id: 'c1',
+    name: '家居控小林',
+    ava: '🧑',
+    platform: 'douyin',
+    source: '关键词拓客 · 家居好物',
+    channel: '私信 + 评论',
+    phone: '138****6688',
+    lastInteract: '11:05',
+    status: '待跟进',
+  },
+  {
+    id: 'c2',
+    name: '装修老张',
+    ava: '👷',
+    platform: 'douyin',
+    source: '对标拓客 · 竞品A粉丝',
+    channel: '私信',
+    phone: '139****1024',
+    lastInteract: '昨天 21:20',
+    status: '已回复',
+  },
+  {
+    id: 'c3',
+    name: '小红薯·悦悦',
+    ava: '👩',
+    platform: 'xiaohongshu',
+    source: '视频拓客 · ins风家具',
+    channel: '私信',
+    phone: '186****7799',
+    lastInteract: '11:41',
+    status: '已回复',
+  },
+  {
+    id: 'c4',
+    name: '某手-阿强',
+    ava: '🧢',
+    platform: 'kuaishou',
+    source: '直播拓客 · 家居专场',
+    channel: '私信',
+    phone: '—',
+    lastInteract: '09:58',
+    status: '未回复',
+  },
+  {
+    id: 'c5',
+    name: '梅姐',
+    ava: '👩‍🦰',
+    platform: 'douyin',
+    source: '粉丝拓客 · 老粉激活',
+    channel: '私信',
+    phone: '188****0011',
+    lastInteract: '3 天前',
+    status: '已转化',
+  },
+  {
+    id: 'c6',
+    name: '阿豪',
+    ava: '🧑‍💻',
+    platform: 'xiaohongshu',
+    source: '关键词拓客 · 出租屋改造',
+    channel: '私信 + 评论',
+    phone: '177****5533',
+    lastInteract: '08:47',
+    status: '已回复',
+  },
+  {
+    id: 'c7',
+    name: '星辰大海',
+    ava: '星',
+    platform: 'douyin',
+    source: '对标拓客 · 竞品A粉丝',
+    channel: '私信',
+    phone: '150****8821',
+    lastInteract: '昨天 18:30',
+    status: '待跟进',
+  },
+  {
+    id: 'c8',
+    name: '小丸子不甜',
+    ava: '丸',
+    platform: 'douyin',
+    source: '粉丝拓客 · 老粉激活',
+    channel: '私信',
+    phone: '—',
+    lastInteract: '昨天 14:10',
+    status: '未回复',
+  },
+];

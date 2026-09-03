@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import type { TableColumnsType } from 'ant-design-vue';
+import type { MockContact } from '../_shared/mock-data';
 
-import { computed, h, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 import {
   Avatar,
@@ -10,21 +11,28 @@ import {
   Input,
   message,
   Select,
-  Table,
   Tag,
 } from 'ant-design-vue';
 
-interface Contact {
-  id: string;
-  name: string;
-  ava: string;
-  platform: 'douyin' | 'kuaishou' | 'xiaohongshu';
-  source: string;
-  channel: string;
-  phone: string;
-  lastInteract: string;
-  status: '已回复' | '已转化' | '待跟进' | '未回复';
-}
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+
+import {
+  cardClass,
+  pageGapClass,
+  primaryBtnClass,
+} from '../_shared/chic-classes';
+import { filterContacts } from '../_shared/contact-filter';
+import { acqPlatformLabels, mockContacts } from '../_shared/mock-data';
+import ImportModal from './import-modal.vue';
+
+type ModalExpose = {
+  modalApi: {
+    open: () => void;
+  };
+};
+
+const router = useRouter();
+const importModalRef = ref<ModalExpose>();
 
 const platformOptions = [
   { label: '全部平台', value: 'all' },
@@ -55,280 +63,182 @@ const stats = [
   { label: '已转化', value: '9', delta: '转化率 10.5%' },
 ];
 
-const data: Contact[] = [
-  {
-    id: 'c1',
-    name: '家居控小林',
-    ava: '🧑',
-    platform: 'douyin',
-    source: '关键词拓客 · 家居好物',
-    channel: '私信 + 评论',
-    phone: '138****6688',
-    lastInteract: '11:05',
-    status: '待跟进',
-  },
-  {
-    id: 'c2',
-    name: '装修老张',
-    ava: '👷',
-    platform: 'douyin',
-    source: '对标拓客 · 竞品A粉丝',
-    channel: '私信',
-    phone: '139****1024',
-    lastInteract: '昨天 21:20',
-    status: '已回复',
-  },
-  {
-    id: 'c3',
-    name: '小红薯·悦悦',
-    ava: '👩',
-    platform: 'xiaohongshu',
-    source: '视频拓客 · ins风家具',
-    channel: '私信',
-    phone: '186****7799',
-    lastInteract: '11:41',
-    status: '已回复',
-  },
-  {
-    id: 'c4',
-    name: '某手-阿强',
-    ava: '🧢',
-    platform: 'kuaishou',
-    source: '直播拓客 · 家居专场',
-    channel: '私信',
-    phone: '—',
-    lastInteract: '09:58',
-    status: '未回复',
-  },
-  {
-    id: 'c5',
-    name: '梅姐',
-    ava: '👩‍🦰',
-    platform: 'douyin',
-    source: '粉丝拓客 · 老粉激活',
-    channel: '私信',
-    phone: '188****0011',
-    lastInteract: '3 天前',
-    status: '已转化',
-  },
-  {
-    id: 'c6',
-    name: '阿豪',
-    ava: '🧑‍💻',
-    platform: 'xiaohongshu',
-    source: '关键词拓客 · 出租屋改造',
-    channel: '私信 + 评论',
-    phone: '177****5533',
-    lastInteract: '08:47',
-    status: '已回复',
-  },
-  {
-    id: 'c7',
-    name: '星辰大海',
-    ava: '星',
-    platform: 'douyin',
-    source: '对标拓客 · 竞品A粉丝',
-    channel: '私信',
-    phone: '150****8821',
-    lastInteract: '昨天 18:30',
-    status: '待跟进',
-  },
-  {
-    id: 'c8',
-    name: '小丸子不甜',
-    ava: '丸',
-    platform: 'douyin',
-    source: '粉丝拓客 · 老粉激活',
-    channel: '私信',
-    phone: '—',
-    lastInteract: '昨天 14:10',
-    status: '未回复',
-  },
-];
-
-const platform = ref('all');
-const status = ref('all');
-const source = ref('all');
-const search = ref('');
-
-const filteredData = computed(() => {
-  return data.filter((c) => {
-    if (platform.value !== 'all' && c.platform !== platform.value) return false;
-    if (status.value !== 'all' && c.status !== status.value) return false;
-    if (source.value !== 'all' && c.source !== source.value) return false;
-    if (
-      search.value &&
-      !c.name.includes(search.value) &&
-      !c.phone.includes(search.value)
-    )
-      return false;
-    return true;
-  });
+const query = reactive({
+  platform: 'all',
+  search: '',
+  source: 'all',
+  status: 'all',
 });
 
-const platformLabel = (key: string) => {
-  if (key === 'douyin') return { label: '某音', color: 'default' };
-  if (key === 'xiaohongshu') return { label: '小某书', color: 'error' };
-  if (key === 'kuaishou') return { label: '某手', color: 'orange' };
-  return { label: '-', color: 'default' };
-};
+const filteredData = computed(() => filterContacts(mockContacts, query));
 
-const statusColor = (s: Contact['status']) => {
-  if (s === '已转化') return 'success';
-  if (s === '已回复') return 'processing';
-  if (s === '待跟进') return 'warning';
+function platformColor(key: string) {
+  if (key === 'xiaohongshu') return 'error';
+  if (key === 'kuaishou') return 'orange';
   return 'default';
-};
+}
 
-const columns: TableColumnsType<Contact> = [
-  {
-    title: '联系人',
-    dataIndex: 'name',
-    fixed: 'left',
-    width: 200,
-    customRender: ({ record }) =>
-      h('div', { class: 'flex items-center gap-2' }, [
-        h(
-          Avatar,
-          { size: 28, class: '!flex-shrink-0' },
-          () => (record as Contact).ava,
-        ),
-        h(
-          'span',
-          { class: 'text-[13px] font-medium' },
-          (record as Contact).name,
-        ),
-      ]),
+function statusColor(status: string) {
+  if (status === '已转化') return 'success';
+  if (status === '已回复') return 'processing';
+  if (status === '待跟进') return 'warning';
+  return 'default';
+}
+
+const [Grid, gridApi] = useVbenVxeGrid<MockContact>({
+  gridOptions: {
+    columns: [
+      {
+        align: 'left',
+        fixed: 'left',
+        minWidth: 160,
+        slots: { default: 'contact' },
+        title: '联系人',
+      },
+      { minWidth: 90, slots: { default: 'platform' }, title: '平台' },
+      { field: 'source', minWidth: 180, title: '来源任务' },
+      { field: 'channel', minWidth: 120, title: '触达方式' },
+      { field: 'phone', minWidth: 130, title: '联系方式' },
+      { field: 'lastInteract', minWidth: 110, title: '最近互动' },
+      { minWidth: 90, slots: { default: 'status' }, title: '状态' },
+      {
+        fixed: 'right',
+        minWidth: 180,
+        slots: { default: 'actions' },
+        title: '操作',
+      },
+    ],
+    data: filteredData.value,
+    pagerConfig: { enabled: false },
+    rowConfig: { keyField: 'id' },
+    scrollX: { enabled: true },
   },
-  {
-    title: '平台',
-    dataIndex: 'platform',
-    width: 100,
-    customRender: ({ record }) => {
-      const p = platformLabel((record as Contact).platform);
-      return h(Tag, { color: p.color }, () => p.label);
-    },
-  },
-  { title: '来源任务', dataIndex: 'source', ellipsis: true },
-  { title: '触达方式', dataIndex: 'channel', width: 120 },
-  { title: '联系方式', dataIndex: 'phone', width: 130 },
-  { title: '最近互动', dataIndex: 'lastInteract', width: 130 },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    width: 90,
-    customRender: ({ record }) =>
-      h(
-        Tag,
-        { color: statusColor((record as Contact).status) },
-        () => (record as Contact).status,
-      ),
-  },
-  {
-    title: '操作',
-    width: 160,
-    fixed: 'right',
-    customRender: () =>
-      h('div', { class: 'flex gap-2' }, [
-        h(
-          'a',
-          { class: 'cursor-pointer text-[#4B3FE3] hover:underline mr-2' },
-          '查看',
-        ),
-        h(
-          'a',
-          { class: 'cursor-pointer text-[#4B3FE3] hover:underline mr-2' },
-          '跟进',
-        ),
-        h(
-          'a',
-          { class: 'cursor-pointer text-[#4B3FE3] hover:underline' },
-          '标记',
-        ),
-      ]),
-  },
-];
+});
+
+watch(filteredData, (data) => {
+  gridApi.setGridOptions({ data });
+});
 
 function onImport() {
-  message.info('打开「导入好友任务」（演示）');
+  importModalRef.value?.modalApi.open();
 }
+
 function onExport() {
-  message.success('已导出 86 条联系人（演示）');
+  message.success('已导出 86 条联系人（Excel）');
+}
+
+function viewContact() {
+  router.push({ name: 'AiButlerChat' });
+}
+
+function followContact(row: MockContact) {
+  message.info(`已标记跟进 · ${row.name}（演示）`);
+}
+
+function markContact(row: MockContact) {
+  message.info(`已标记 · ${row.name}（演示）`);
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-3.5">
-    <!-- 统计：移动端 2 列，>= md 4 列 -->
-    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+  <div :class="pageGapClass">
+    <div class="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4">
       <div
-        v-for="s in stats"
-        :key="s.label"
-        class="rounded-[14px] border border-[#E5E7EB] bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+        v-for="item in stats"
+        :key="item.label"
+        class="relative overflow-hidden rounded-[15px] border border-[#DCDAD4] bg-white p-3.5 shadow-[0_1px_0_rgba(10,10,10,.04),0_5px_16px_rgba(10,10,10,.035)] sm:p-4"
       >
-        <div class="mb-1.5 text-[12px] text-[#6B7280]">{{ s.label }}</div>
-        <div class="text-[22px] font-bold leading-tight">{{ s.value }}</div>
+        <div class="mb-1 text-[11.5px] text-[#71716B] sm:mb-1.5 sm:text-[12px]">
+          {{ item.label }}
+        </div>
         <div
-          v-if="s.delta"
-          class="mt-[3px] text-[11px]"
-          :class="s.positive ? 'text-[#10B981]' : 'text-[#6B7280]'"
+          class="text-[20px] font-bold leading-tight text-[#0A0A0A] sm:text-[22px]"
         >
-          {{ s.delta }}
+          {{ item.value }}
+        </div>
+        <div
+          class="mt-[3px] text-[10.5px] sm:text-[11px]"
+          :class="item.positive ? 'text-[#16803C]' : 'text-[#71716B]'"
+        >
+          {{ item.delta }}
         </div>
       </div>
     </div>
 
-    <Card :bordered="false" class="!rounded-[14px]">
+    <Card :bordered="false" :class="cardClass">
       <template #title>
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="text-[13px] font-semibold">联系人明细</span>
           <div class="flex items-center gap-2">
             <Button size="small" @click="onImport">➡ 导入好友任务</Button>
-            <Button size="small" type="primary" @click="onExport">
+            <Button
+              :class="primaryBtnClass"
+              size="small"
+              type="primary"
+              @click="onExport"
+            >
               ⬇ 导出
             </Button>
           </div>
         </div>
       </template>
 
-      <!-- 筛选：移动端纵向堆叠，>= sm 横向 -->
       <div
         class="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
       >
         <Select
-          v-model:value="platform"
+          v-model:value="query.platform"
           :options="platformOptions"
           class="!w-full sm:!w-[120px]"
         />
         <Select
-          v-model:value="status"
+          v-model:value="query.status"
           :options="statusOptions"
           class="!w-full sm:!w-[120px]"
         />
         <Select
-          v-model:value="source"
+          v-model:value="query.source"
           :options="sourceOptions"
           class="!w-full sm:!w-[200px]"
         />
         <Input
-          v-model:value="search"
-          placeholder="搜索联系人 / 联系方式"
-          class="!w-full sm:!w-[200px]"
+          v-model:value="query.search"
           allow-clear
+          class="!w-full sm:!w-[200px]"
+          placeholder="搜索联系人 / 联系方式"
         />
         <span class="text-[11px] text-[#6B7280]">
           共 {{ filteredData.length }} 条
         </span>
       </div>
 
-      <Table
-        :columns="columns"
-        :data-source="filteredData"
-        :pagination="{ pageSize: 10, showSizeChanger: true }"
-        :scroll="{ x: 800 }"
-        size="small"
-        row-key="id"
-      />
+      <Grid>
+        <template #contact="{ row }">
+          <div class="flex items-center gap-2">
+            <Avatar :size="28" class="!flex-shrink-0">{{ row.ava }}</Avatar>
+            <span class="text-[13px] font-medium">{{ row.name }}</span>
+          </div>
+        </template>
+        <template #platform="{ row }">
+          <Tag :color="platformColor(row.platform)">
+            {{ acqPlatformLabels[row.platform] ?? row.platform }}
+          </Tag>
+        </template>
+        <template #status="{ row }">
+          <Tag :color="statusColor(row.status)">{{ row.status }}</Tag>
+        </template>
+        <template #actions="{ row }">
+          <Button size="small" type="link" @click="viewContact">查看</Button>
+          <Button size="small" type="link" @click="followContact(row)">
+            跟进
+          </Button>
+          <Button size="small" type="link" @click="markContact(row)">
+            标记
+          </Button>
+        </template>
+      </Grid>
     </Card>
+
+    <ImportModal ref="importModalRef" />
   </div>
 </template>
