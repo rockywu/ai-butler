@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { Ref } from 'vue';
 
+import type { MockAccount } from '../../_shared/mock-data';
+
 import { computed, inject, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
@@ -9,6 +11,7 @@ import { Button, message } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
+import { listenToggleLabel } from '../../_shared/account-listen';
 import { acqPlatformLabels, mockAccounts } from '../../_shared/mock-data';
 
 type OpenModalFn = (key: string, data?: unknown) => void;
@@ -45,7 +48,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
         title: '监听',
         width: 80,
       },
-      { slots: { default: 'actions' }, title: '操作', width: 220 },
+      { slots: { default: 'actions' }, title: '操作', width: 320 },
     ],
     data: filteredAccounts.value,
     pagerConfig: { enabled: false },
@@ -79,6 +82,15 @@ function refreshList() {
 function bindAgent() {
   message.info('绑定智能体（演示）');
 }
+
+function toggleListen(row: MockAccount) {
+  const action = row.listenOn ? '已关闭监听' : '已开启监听';
+  message.info(`${action}（演示）· ${row.nickname}`);
+}
+
+function pullSessions(row: MockAccount) {
+  message.info(`拉取会话（演示）· ${row.nickname}`);
+}
 </script>
 
 <template>
@@ -92,8 +104,14 @@ function bindAgent() {
       </span>
     </div>
     <Grid>
-      <template #actions>
+      <template #actions="{ row }">
         <Button size="small" type="link" @click="bindAgent">绑定智能体</Button>
+        <Button size="small" type="link" @click="toggleListen(row)">
+          {{ listenToggleLabel(row.listenOn) }}
+        </Button>
+        <Button size="small" type="link" @click="pullSessions(row)">
+          拉取会话
+        </Button>
       </template>
     </Grid>
     <div

@@ -16,6 +16,7 @@ import {
   acqTaskStatusLabels,
   mockTasks,
 } from '../../_shared/mock-data';
+import { commentModalKeyForTask } from '../../_shared/task-comment-modal';
 
 type OpenModalFn = (key: string, data?: unknown) => void;
 
@@ -103,15 +104,7 @@ function copyTask(row: MockTask) {
 }
 
 function viewComments(row: MockTask) {
-  if (row.typeLabel === '直播拓客') {
-    message.info('查看直播评论（演示）');
-    return;
-  }
-  if (row.typeLabel === '粉丝拓客') {
-    message.info('查看粉丝列表（演示）');
-    return;
-  }
-  message.info('查看评论（演示）');
+  openModal?.(commentModalKeyForTask(row.typeLabel), row);
 }
 
 function toggleTask(row: MockTask) {

@@ -20,7 +20,7 @@ import { openWindow } from '@vben/utils';
 
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
-import LoginForm from '#/views/_core/authentication/login.vue';
+import LoginForm from '#/views/_core/authentication/login-form.vue';
 import RechargeModal from '#/views/ai-butler/recharge/recharge-modal.vue';
 
 const notifications = ref<NotificationItem[]>([

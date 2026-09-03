@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { MockTask } from '../../_shared/mock-data';
 
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
@@ -11,6 +11,11 @@ import {
   acqPlatformLabels,
   acqTaskStatusLabels,
 } from '../../_shared/mock-data';
+import { commentModalKeyForTask } from '../../_shared/task-comment-modal';
+
+type OpenModalFn = (key: string, data?: unknown) => void;
+
+const openModal = inject<OpenModalFn | undefined>('openModal');
 
 const task = ref<MockTask>();
 
@@ -49,15 +54,7 @@ function copyTask() {
 
 function viewComments() {
   if (!task.value) return;
-  if (task.value.typeLabel === '直播拓客') {
-    message.info('查看直播评论（演示）');
-    return;
-  }
-  if (task.value.typeLabel === '粉丝拓客') {
-    message.info('查看粉丝列表（演示）');
-    return;
-  }
-  message.info(`已打开「${task.value.name}」抓取的评论（演示）`);
+  openModal?.(commentModalKeyForTask(task.value.typeLabel), task.value);
 }
 </script>
 
