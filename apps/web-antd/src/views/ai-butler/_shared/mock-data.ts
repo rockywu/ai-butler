@@ -98,3 +98,135 @@ export const workbenchFeeds: WorkbenchFeed[] = [
     dotClass: 'bg-[#6675F5]',
   },
 ];
+
+export type AcqCardTone = 'blue' | 'cyan' | 'green' | 'orange' | 'purple';
+
+export interface AcqActionCard {
+  desc: string;
+  iconId: string;
+  key: string;
+  modalKey: string;
+  title: string;
+  tone: AcqCardTone;
+}
+
+export const acqZoneCards: AcqActionCard[] = [
+  {
+    key: 'account',
+    title: '账号管理',
+    desc: '授权和管理平台账号，查看账号状态和数据',
+    iconId: 'si-account',
+    tone: 'purple',
+    modalKey: 'm-account',
+  },
+  {
+    key: 'reply',
+    title: '回复 / 私信预设',
+    desc: '自由挑选已保存的常用语句，灵活应对各类私信场景，回复更轻松',
+    iconId: 'si-reply',
+    tone: 'orange',
+    modalKey: 'm-reply',
+  },
+  {
+    key: 'keyword',
+    title: '关键词预设',
+    desc: '预先配置目标关键词，智能筛选并识别出包含该词汇的用户评论，精准锁定意向客户',
+    iconId: 'si-keyword',
+    tone: 'cyan',
+    modalKey: 'm-keyword',
+  },
+  {
+    key: 'process',
+    title: '运行进程管理',
+    desc: '查看当前运行中的任务，可对其进行操作',
+    iconId: 'si-process',
+    tone: 'green',
+    modalKey: 'm-process',
+  },
+];
+
+export const acqLeadCards: AcqActionCard[] = [
+  {
+    key: 'competitor',
+    title: '对标拓客',
+    desc: '针对特定用户精准拓客，分析竞争对手粉丝与评论',
+    iconId: 'si-competitor',
+    tone: 'blue',
+    modalKey: 'm-acq-competitor',
+  },
+  {
+    key: 'video',
+    title: '视频拓客',
+    desc: '通过视频内容拓客，分析视频表现和受众',
+    iconId: 'si-video',
+    tone: 'orange',
+    modalKey: 'm-acq-video',
+  },
+  {
+    key: 'keyword',
+    title: '关键词拓客',
+    desc: '基于关键词搜索拓客，精准定位目标用户',
+    iconId: 'si-searchlead',
+    tone: 'green',
+    modalKey: 'm-acq-keyword',
+  },
+  {
+    key: 'live',
+    title: '直播拓客',
+    desc: '基于直播间配合关键词拓客，精准定位目标用户',
+    iconId: 'si-live',
+    tone: 'purple',
+    modalKey: 'm-acq-live',
+  },
+  {
+    key: 'fan',
+    title: '粉丝拓客',
+    desc: '针对粉丝进行拓客，分析粉丝互动和转化效果',
+    iconId: 'si-fan',
+    tone: 'blue',
+    modalKey: 'm-acq-fan',
+  },
+];
+
+export const acqTaskCards: AcqActionCard[] = [
+  {
+    key: 'tasks',
+    title: '任务列表',
+    desc: '查看已执行的任务列表，了解执行进度和结果',
+    iconId: 'si-tasks',
+    tone: 'green',
+    modalKey: 'm-tasks',
+  },
+  {
+    key: 'interact',
+    title: '互动记录列表',
+    desc: '查看点赞和关注的历史记录，分析互动效果',
+    iconId: 'si-interact',
+    tone: 'blue',
+    modalKey: 'm-interact',
+  },
+  {
+    key: 'comment',
+    title: '数据评论列表',
+    desc: '查看和管理账号的评论数据和互动记录',
+    iconId: 'si-comments',
+    tone: 'purple',
+    modalKey: 'm-comment',
+  },
+  {
+    key: 'live',
+    title: '直播评论列表',
+    desc: '查看和管理直播间的评论数据和互动记录',
+    iconId: 'si-livecomments',
+    tone: 'orange',
+    modalKey: 'm-live',
+  },
+  {
+    key: 'fan',
+    title: '粉丝列表',
+    desc: '查看和管理已采集粉丝数据与触达状态',
+    iconId: 'si-fanlist',
+    tone: 'purple',
+    modalKey: 'm-fan',
+  },
+];
