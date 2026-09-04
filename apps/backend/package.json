@@ -1,0 +1,43 @@
+{
+  "name": "@ai-butler/backend",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "benchmark": "tsx benchmarks/http-overhead.ts",
+    "benchmark:check": "cross-env BENCHMARK_ENFORCE=true tsx benchmarks/http-overhead.ts",
+    "build": "tsdown",
+    "check:architecture": "depcruise --config .dependency-cruiser.cjs src",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run --environment node --exclude '**/*.integration.test.ts' --exclude '**/*.e2e.test.ts'",
+    "test:e2e": "vitest run --environment node tests/shutdown.e2e.test.ts",
+    "test:integration": "vitest run --environment node src/infrastructure/database/transaction.integration.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/swagger": "catalog:",
+    "@fastify/type-provider-typebox": "catalog:",
+    "drizzle-orm": "catalog:",
+    "fastify": "catalog:",
+    "fastify-plugin": "catalog:",
+    "postgres": "catalog:",
+    "typebox": "catalog:"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "catalog:",
+    "@types/node": "catalog:",
+    "@vben/tsconfig": "workspace:*",
+    "autocannon": "catalog:",
+    "cross-env": "catalog:",
+    "dependency-cruiser": "catalog:",
+    "drizzle-kit": "catalog:",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
