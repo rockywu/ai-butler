@@ -6,10 +6,18 @@ import { runWithRequestContext } from './request-context';
 
 const requestContextPlugin: FastifyPluginCallback = (app, _options, done) => {
   app.addHook('onRequest', (request, reply, next) => {
-    const header = request.headers['x-request-id'];
-    const requestId = typeof header === 'string' ? header : request.id;
+    const requestHeader = request.headers['x-request-id'];
+    const traceHeader = request.headers['x-trace-id'];
+    const requestId =
+      typeof requestHeader === 'string' ? requestHeader : request.id;
+    const traceId = typeof traceHeader === 'string' ? traceHeader : undefined;
+
     reply.header('x-request-id', requestId);
-    runWithRequestContext({ requestId, traceId: undefined }, next);
+    if (traceId) {
+      reply.header('x-trace-id', traceId);
+    }
+
+    runWithRequestContext({ requestId, traceId }, next);
   });
   done();
 };

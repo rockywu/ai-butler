@@ -1,3 +1,5 @@
+import type { Logger } from 'pino';
+
 import type { AppConfig } from '../framework/config/schema';
 import type { AppDependencies } from './dependencies';
 
@@ -12,12 +14,19 @@ import { registerModules } from './register-modules';
 export interface CreateAppOptions {
   config?: AppConfig;
   dependencies?: Partial<AppDependencies>;
-  logger?: boolean;
+  logger?: boolean | Logger;
+}
+
+function httpOptions(logger: CreateAppOptions['logger']) {
+  if (logger && typeof logger === 'object') {
+    return { loggerInstance: logger };
+  }
+  return { logger: logger ?? false };
 }
 
 export async function createApp(options: CreateAppOptions = {}) {
   const config = options.config ?? testConfig();
-  const app = createHttpServer({ logger: options.logger ?? false });
+  const app = createHttpServer(httpOptions(options.logger));
   app.decorate('config', config);
 
   await app.register(errorHandlerPlugin);

@@ -24,6 +24,7 @@
     "drizzle-orm": "catalog:",
     "fastify": "catalog:",
     "fastify-plugin": "catalog:",
+    "pino": "catalog:",
     "postgres": "catalog:",
     "typebox": "catalog:"
   },

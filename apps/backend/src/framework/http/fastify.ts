@@ -13,7 +13,11 @@ declare module 'fastify' {
 }
 
 export function createHttpServer(options: FastifyServerOptions = {}) {
-  return Fastify(options)
+  return Fastify({
+    requestIdHeader: 'x-request-id',
+    requestIdLogLabel: 'requestId',
+    ...options,
+  })
     .setValidatorCompiler(TypeBoxValidatorCompiler)
     .withTypeProvider<TypeBoxTypeProvider>();
 }
