@@ -52,6 +52,7 @@ pnpm --filter @ai-butler/backend check:architecture
 | 符号 | 路径 | 本计划中的用法 |
 | --- | --- | --- |
 | `createApp` / `CreateAppOptions` | `src/app/create-app.ts` | 扩展选项，返回值仍是 `AppInstance` |
+| `TypeBoxValidatorCompiler` | `src/framework/http/fastify.ts` | **禁止删除**。PoC 已证明 Ajv 默认 coerce 会让 `{ value: 42 }` 通过 `POST /poc/echo` |
 | `createDependencies` / `AppDependencies` | `src/app/dependencies.ts` | 测试替换依赖 |
 | `AppError` | `src/framework/core/app-error.ts` | 不改；配置错误用独立 `ConfigError` |
 | `successEnvelopeSchema` / `success` | `src/framework/http/envelope.ts` | 健康检查成功响应 |
@@ -451,11 +452,14 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
 }
 ```
 
-修改 `apps/backend/src/framework/http/fastify.ts`，在现有 `createHttpServer` 之上增加 `config` 装饰类型（保留 PoC 的 `TypeBoxTypeProvider`）：
+修改 `apps/backend/src/framework/http/fastify.ts`，在现有 `createHttpServer` 之上增加 `config` 装饰类型（保留 PoC 的 `TypeBoxTypeProvider` 与 `TypeBoxValidatorCompiler`）：
 
 ```ts
-import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import Fastify, { type FastifyServerOptions } from 'fastify';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import type { FastifyServerOptions } from 'fastify';
+
+import { TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
+import Fastify from 'fastify';
 
 import { type AppConfig } from '../config/schema';
 
@@ -466,7 +470,9 @@ declare module 'fastify' {
 }
 
 export function createHttpServer(options: FastifyServerOptions = {}) {
-  return Fastify(options).withTypeProvider<TypeBoxTypeProvider>();
+  return Fastify(options)
+    .setValidatorCompiler(TypeBoxValidatorCompiler)
+    .withTypeProvider<TypeBoxTypeProvider>();
 }
 
 export type AppInstance = ReturnType<typeof createHttpServer>;
@@ -495,15 +501,15 @@ export async function createApp(options: CreateAppOptions = {}) {
   const app = createHttpServer({ logger: options.logger ?? false });
   app.decorate('config', config);
 
-  await app.register(openApiPlugin);
   await app.register(errorHandlerPlugin);
+  await app.register(openApiPlugin);
   await app.register(requestContextPlugin);
   await registerModules(app, createDependencies(options.dependencies));
   return app;
 }
 ```
 
-`main.ts` 本任务保持 PoC 原样。`main.ts` 读 `process.env` 要到任务 7 才收口；本任务的边界测试已把 `main.ts` / `start.ts` / `load-config.ts` 列入白名单。
+插件顺序保持 PoC：error-handler → OpenAPI → request-context。`main.ts` 本任务保持 PoC 原样。`main.ts` 读 `process.env` 要到任务 7 才收口；本任务的边界测试已把 `main.ts` / `start.ts` / `load-config.ts` 列入白名单。
 
 - [ ] **步骤 4：运行测试验证通过**
 
@@ -774,8 +780,11 @@ export default fp(requestContextPlugin, {
 修改 `apps/backend/src/framework/http/fastify.ts` 为完整文件：
 
 ```ts
-import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import Fastify, { type FastifyServerOptions } from 'fastify';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import type { FastifyServerOptions } from 'fastify';
+
+import { TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
+import Fastify from 'fastify';
 
 import { type AppConfig } from '../config/schema';
 
@@ -790,7 +799,9 @@ export function createHttpServer(options: FastifyServerOptions = {}) {
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'requestId',
     ...options,
-  }).withTypeProvider<TypeBoxTypeProvider>();
+  })
+    .setValidatorCompiler(TypeBoxValidatorCompiler)
+    .withTypeProvider<TypeBoxTypeProvider>();
 }
 
 export type AppInstance = ReturnType<typeof createHttpServer>;
@@ -828,8 +839,8 @@ export async function createApp(options: CreateAppOptions = {}) {
   const app = createHttpServer(httpOptions(options.logger));
   app.decorate('config', config);
 
-  await app.register(openApiPlugin);
   await app.register(errorHandlerPlugin);
+  await app.register(openApiPlugin);
   await app.register(requestContextPlugin);
   await registerModules(app, createDependencies(options.dependencies));
   return app;
@@ -1325,8 +1336,11 @@ export default fp(healthPlugin, {
 修改 `apps/backend/src/framework/http/fastify.ts` 为完整文件：
 
 ```ts
-import { type TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import Fastify, { type FastifyServerOptions } from 'fastify';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import type { FastifyServerOptions } from 'fastify';
+
+import { TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
+import Fastify from 'fastify';
 
 import { type AppConfig } from '../config/schema';
 import { type ReadinessGate } from '../core/readiness';
@@ -1345,7 +1359,9 @@ export function createHttpServer(options: FastifyServerOptions = {}) {
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'requestId',
     ...options,
-  }).withTypeProvider<TypeBoxTypeProvider>();
+  })
+    .setValidatorCompiler(TypeBoxValidatorCompiler)
+    .withTypeProvider<TypeBoxTypeProvider>();
 }
 
 export type AppInstance = ReturnType<typeof createHttpServer>;
@@ -2196,3 +2212,4 @@ EOF
 - `HealthChecker` 是注入检查器的类型名，不要另造 `ReadinessChecker`。
 - `AppConfig` 必须保留 `openapiUiEnabled`；`logLevel` 含 `silent`。
 - 本计划无数据库连接、无业务表。
+- `createHttpServer` 必须保留 `TypeBoxValidatorCompiler`；禁止退回 Fastify 默认 Ajv coerce。
