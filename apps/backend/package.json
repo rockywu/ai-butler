@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsdown",
+    "check:architecture": "depcruise --config .dependency-cruiser.cjs src",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "dev": "tsx watch src/main.ts",
@@ -28,6 +29,7 @@
     "@testcontainers/postgresql": "catalog:",
     "@types/node": "catalog:",
     "@vben/tsconfig": "workspace:*",
+    "dependency-cruiser": "catalog:",
     "drizzle-kit": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",
