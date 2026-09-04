@@ -52,7 +52,7 @@
     "test:backend": "pnpm --filter @ai-butler/backend test",
     "test:benchmark": "vitest bench --run",
     "test:unit": "vitest run --dom",
-    "test:e2e": "turbo run test:e2e",
+    "test:e2e": "turbo run test:e2e --filter=@vben/playground",
     "update:deps": "npx taze -r -w",
     "version": "pnpm exec changeset version && pnpm install --no-frozen-lockfile",
     "catalog": "pnpm dlx codemod pnpm/catalog"

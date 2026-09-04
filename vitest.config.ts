@@ -23,6 +23,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/{stylelint,eslint}.config.*',
       '**/{oxfmt,oxlint}.config.*',
+      'apps/backend/**',
     ],
   },
 });

@@ -141,7 +141,7 @@
 | 任务 7：无正向提交断言；afterAll 无 finally；无 drizzle snapshot | minor | 垂直切片补提交路径与迁移产物 |
 | 任务 8：无 `tsPreCompilationDeps`；架构测试断言偏弱 | minor | 稳定化把 depcruise 接 CI 并收紧断言 |
 | 任务 9：p95 用同进程 fetch | minor | 见问题 8；不要把本机趋势当硬门禁 |
-| 任务 1：`fastify-plugin` 依赖当前未使用 | minor | 若薄内核仍不包 plugin，可删；若要封装 hook 再启用 |
+| 任务 1：`fastify-plugin` 已用于框架插件封装；勿删 | minor | OpenAPI、error-handler、request-context 均 `import fp from 'fastify-plugin'`；按字面删依赖会拆掉三个框架插件 |
 | 任务 4：图内单例断言恒真 | minor | 多服务出现后补共享实例测试 |
 | 任务 2/5：OpenAPI 断言偏弱；`x-request-id` 数组头未测 | minor | 薄内核契约测试加强即可 |
 
