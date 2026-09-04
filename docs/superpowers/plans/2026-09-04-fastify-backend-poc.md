@@ -19,9 +19,11 @@
 实施计划按以下边界拆分：
 
 1. **本计划：技术 PoC**——回答规格第 20 节的十项验证问题，产出 ADR 和实测数据。
-2. **薄内核计划**——仅在本计划评审通过后编写，交付配置、日志脱敏、OpenAPI UI、健康检查、Graceful Shutdown 和测试工厂。
-3. **认证与用户垂直切片计划**——在薄内核接口稳定后编写，交付 JWT、RBAC、用户、迁移及前端契约。
-4. **稳定化计划**——在真实切片完成后编写，交付第二业务模块、故障测试、安全检查和固定环境性能门禁。
+2. **薄内核计划**——[`2026-09-04-fastify-backend-thin-kernel.md`](./2026-09-04-fastify-backend-thin-kernel.md)；仅在本计划评审通过后执行。
+3. **认证与用户垂直切片计划**——[`2026-09-04-fastify-backend-vertical-slice.md`](./2026-09-04-fastify-backend-vertical-slice.md)；在薄内核接口稳定后执行。
+4. **稳定化计划**——[`2026-09-04-fastify-backend-stabilization.md`](./2026-09-04-fastify-backend-stabilization.md)；在真实切片完成后执行。
+
+后三份计划可以先写成草案，但不得在对应前置里程碑完成前开始实现。若 PoC 修订了公共接口，必须先改后续计划再执行。
 
 Redis、NATS、Kafka、OAuth2、Session、CLI、代码生成器和完整 OpenTelemetry 不属于上述四个计划；只有新的已批准规格才能引入。
 
