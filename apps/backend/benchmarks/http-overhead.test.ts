@@ -18,4 +18,34 @@ describe('hTTP benchmark math', () => {
       throughputLossRatio: 0.08,
     });
   });
+
+  it('rejects throughput loss above 10 percent', () => {
+    expect(
+      evaluateBudget({
+        bareP95Ms: 2,
+        bareRequestsPerSecond: 10_000,
+        frameworkP95Ms: 2.5,
+        frameworkRequestsPerSecond: 8900,
+      }),
+    ).toEqual({
+      latencyDeltaMs: 0.5,
+      passed: false,
+      throughputLossRatio: 0.11,
+    });
+  });
+
+  it('rejects p95 latency delta above 1ms', () => {
+    expect(
+      evaluateBudget({
+        bareP95Ms: 0,
+        bareRequestsPerSecond: 10_000,
+        frameworkP95Ms: 1.01,
+        frameworkRequestsPerSecond: 9200,
+      }),
+    ).toEqual({
+      latencyDeltaMs: 1.01,
+      passed: false,
+      throughputLossRatio: 0.08,
+    });
+  });
 });
