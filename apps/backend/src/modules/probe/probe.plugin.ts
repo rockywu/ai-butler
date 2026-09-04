@@ -3,8 +3,10 @@ import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import type { ProbeService } from './probe.service';
 
 import { AppError } from '../../framework/core/app-error';
+import { getRequestContext } from '../../framework/core/request-context';
 import { success } from '../../framework/http/envelope';
 import {
+  ContextResponseSchema,
   EchoBodySchema,
   EchoResponseSchema,
   PingResponseSchema,
@@ -21,6 +23,16 @@ export const probePlugin: FastifyPluginAsyncTypebox<
     '/poc/ping',
     { schema: { response: { 200: PingResponseSchema } } },
     async () => success(options.service.read()),
+  );
+
+  app.get(
+    '/poc/context',
+    { schema: { response: { 200: ContextResponseSchema } } },
+    async () => {
+      await Promise.resolve();
+      const { requestId } = getRequestContext();
+      return success({ requestId });
+    },
   );
 
   app.post(

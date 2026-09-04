@@ -7,6 +7,9 @@ export const EchoBodySchema = Type.Object({
 });
 
 export const EchoResponseSchema = successEnvelopeSchema(EchoBodySchema);
+export const ContextResponseSchema = successEnvelopeSchema(
+  Type.Object({ requestId: Type.String() }),
+);
 export const PingResponseSchema = successEnvelopeSchema(
   Type.Object({
     pong: Type.Boolean(),
