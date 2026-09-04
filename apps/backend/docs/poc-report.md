@@ -71,10 +71,10 @@
 
 ## 问题 7：关闭流程能否停止流量、等待在途请求并逆序释放资源
 
-- **结论：** 通过（干净 SIGTERM 路径）；超时硬退出仍是 parked
+- **结论：** 部分通过（干净 SIGTERM + 逆序释放）
 - **对应文件：** `src/framework/core/resource-registry.ts`、`src/framework/core/resource-registry.test.ts`、`src/framework/core/shutdown.ts`、`src/framework/core/shutdown.test.ts`、`tests/shutdown.e2e.test.ts`、`src/main.ts`
 - **实际命令：** `pnpm --filter @ai-butler/backend test`；`pnpm --filter @ai-butler/backend build`；`pnpm --filter @ai-butler/backend test:e2e`
-- **退出码与数据：** 均为 0。单元：资源按注册逆序关闭且二次 `closeAll` 不重复；单个失败仍关完其余并抛 `AggregateError`；同一 `shutdown()` 返回同一 Promise，25ms 超时拒绝。E2E：进程 `SIGTERM` 后 `signal=null`、`code=0`
+- **退出码与数据：** 均为 0。单元：资源按注册逆序关闭且二次 `closeAll` 不重复；单个失败仍关完其余并抛 `AggregateError`；同一 `shutdown()` 返回同一 Promise，25ms 超时拒绝。E2E：进程 `SIGTERM` 后 `signal=null`、`code=0`；启动后直接发信号，不发在途请求，也不测停止接收新流量。
 - **对薄内核的影响：** **必须处理账本 parked：** 超时只设 `process.exitCode = 1`，`app.close()` 挂死时监听句柄仍在，进程不会退出。薄内核或稳定化需补硬退出（超时后 `process.exit(1)` 或强制关掉剩余句柄）以及未关资源日志。账本 minor：`Promise.race` 输家未处理拒绝；关闭中 `register` 未测。E2E 未覆盖 SIGINT 与在途请求排空。
 
 ## 问题 8：框架热路径是否满足性能预算
@@ -147,8 +147,10 @@
 
 ## 设计状态判定
 
-十项均有可复现证据。除问题 8 的本机 p95 预算按计划允许失败并已解释外，其余命令退出码均为 0，无未解释失败。因此将规格状态改为：
+十项均有可复现证据。除问题 8 的本机 p95 预算按计划允许失败并已解释外，其余命令退出码均为 0，无未解释失败。问题 7 为部分通过，缺口已写明。因此将规格状态改为：
 
 **状态：技术 PoC 已验证，等待薄内核实现计划评审**
+
+§7.2 在途排空与超时硬退出**不在已验证范围**，必须进薄内核/稳定化。
 
 不在本报告后开始薄内核、认证、用户或产品业务实现。先评审本报告与 ADR 0001–0003。
