@@ -5,6 +5,8 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
+    "benchmark": "tsx benchmarks/http-overhead.ts",
+    "benchmark:check": "cross-env BENCHMARK_ENFORCE=true tsx benchmarks/http-overhead.ts",
     "build": "tsdown",
     "check:architecture": "depcruise --config .dependency-cruiser.cjs src",
     "db:generate": "drizzle-kit generate",
@@ -29,6 +31,8 @@
     "@testcontainers/postgresql": "catalog:",
     "@types/node": "catalog:",
     "@vben/tsconfig": "workspace:*",
+    "autocannon": "catalog:",
+    "cross-env": "catalog:",
     "dependency-cruiser": "catalog:",
     "drizzle-kit": "catalog:",
     "tsdown": "catalog:",
