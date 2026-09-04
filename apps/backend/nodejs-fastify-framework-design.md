@@ -1,1258 +1,601 @@
-# Node.js + TypeScript 高性能通用后端框架设计规划
+# Node.js + TypeScript + Fastify 后端框架设计
 
-**版本：V0.1**  
-**状态：设计规划 / 待技术验证**  
-**目标：构建一套基于 Node.js + TypeScript + Fastify 的企业级、模块化、高性能通用后端基础框架**
+**版本：V0.2**
 
----
+**状态：设计已确认，暂不进入开发**
 
-## 一、项目目标
+**代码边界：所有服务端代码均存放在 `apps/backend`**
 
-本项目不是简单搭建一个业务 API 服务，而是规划一套可长期维护、可复用、可扩展的 Node.js 通用后端基础框架。
+## 1. 背景与目标
 
-核心目标：
+本项目计划构建一套基于 Node.js、TypeScript 和 Fastify 的内部通用后端框架，第一阶段仅供当前 Monorepo 使用。
 
-1. 使用 TypeScript 作为主要开发语言。
-2. 使用 Fastify 作为 HTTP/Web 核心。
-3. 保持较高的运行性能和较低的框架开销。
-4. 提供类似企业级框架的工程化能力。
-5. 将 HTTP、业务架构、数据库、缓存、消息、日志、认证、可观测性等能力模块化。
-6. 支持未来多个业务项目复用。
-7. 避免强绑定 NestJS，保留底层架构自主控制能力。
-8. 通过 Monorepo 管理基础包和业务应用。
+框架优先服务以下目标：
 
----
+1. 为后续服务端应用提供统一的启动、配置、HTTP、错误、日志、测试和资源关闭能力。
+2. 保持较低的运行时开销，不重复实现 Fastify 已有的插件封装和生命周期机制。
+3. 通过“认证 + 用户 + PostgreSQL”真实业务切片验证框架抽象。
+4. 以模块化单体作为未来 12 个月的主要部署形态，出现明确边界后再评估拆分服务。
+5. 保持业务逻辑与 HTTP、数据库及其他基础设施的依赖边界。
 
-# 二、总体技术路线
+## 2. 非目标
 
-最终采用：
+第一阶段明确不做以下事项：
 
-```text
-                    Application
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-     Controller                      Service
-          │                             │
-          └──────────────┬──────────────┘
-                         │
-                    Repository
-                         │
-          ┌──────────────┼──────────────┐
-          │              │              │
-       Drizzle         Redis           NATS
-          │              │              │
-     PostgreSQL         Cache            MQ
+- 不发布公共 npm 框架。
+- 不将服务端公共能力拆到仓库根目录的 `packages/`。
+- 不复制 NestJS 的装饰器、反射元数据和完整依赖注入体系。
+- 不同时支持 JWT、API Key、OAuth2 和 Session。
+- 不因未来可能替换技术而预先封装通用 ORM、缓存或消息接口。
+- 不在没有业务需求时引入 Redis、NATS、Kafka 或完整 OpenTelemetry。
+- 不开发 CLI、代码生成器和项目模板。
 
+## 3. 核心设计原则
 
-──────────────────────────────────────────────
+### 3.1 薄内核
 
-              Framework Layer
+优先复用 Fastify Plugin、封装作用域、Hook 和生命周期。自研框架层只解决应用装配、配置、错误、上下文、可观测性和资源关闭等跨模块问题。
 
- Core / Module / DI / Config / Auth
- Error / Event / Lifecycle / Validation
-                     │
-                     ▼
-                  Fastify
-                     │
-          ┌──────────┼──────────┐
-          ▼          ▼          ▼
-        Pino      TypeBox   OpenTelemetry
+### 3.2 真实需求驱动抽象
 
-──────────────────────────────────────────────
+公共能力必须先被真实业务切片使用。只有出现重复模式、独立依赖边界或第二个消费者后，才进一步提取抽象。
 
-                  Node.js
-                TypeScript
-```
+### 3.3 显式依赖
 
----
+依赖通过工厂函数和构造函数显式传递。禁止通过全局容器任意获取服务，第一阶段不实现 DI Container 和 Request Scope。
 
-# 三、核心技术选型
+### 3.4 单向依赖
 
-## 3.1 Runtime
+业务可以依赖框架和基础设施提供的接口，框架不能依赖业务。业务服务不能依赖 Fastify，领域逻辑不能依赖 Drizzle Client。
 
-### Node.js
+### 3.5 不承诺无成本替换
 
-作为默认生产运行环境。
+框架不承诺 Redis、NATS、Drizzle 或 Pino 可以任意替换，只保证业务核心不直接依赖具体客户端。只有真实替换需求出现后，才设计对应适配层。
 
-选择原因：
+## 4. 代码组织
 
-- 成熟
-- 生态完善
-- TypeScript 支持成熟
-- 企业部署环境普遍
-- Fastify 生态完善
-- 长期维护成本可控
-
-暂不以 Bun 作为生产运行时。
-
----
-
-## 3.2 Programming Language
-
-### TypeScript
-
-项目原则：
+所有服务端规划、框架、业务、迁移和测试代码统一放在 `apps/backend`：
 
 ```text
-TypeScript First
-Strict Mode
+apps/backend/
+├── nodejs-fastify-framework-design.md
+├── package.json
+├── src/
+│   ├── main.ts
+│   ├── app/
+│   │   ├── create-app.ts
+│   │   └── register-modules.ts
+│   ├── framework/
+│   │   ├── core/
+│   │   ├── http/
+│   │   ├── config/
+│   │   ├── observability/
+│   │   └── testing/
+│   ├── infrastructure/
+│   │   └── database/
+│   └── modules/
+│       ├── auth/
+│       └── user/
+├── migrations/
+├── tests/
+└── benchmarks/
 ```
 
-建议开启：
+该结构是目标结构，不代表当前已进入实现。
+
+### 4.1 目录职责
+
+- `app`：应用创建、模块装配和启动入口。
+- `framework/core`：应用生命周期、资源关闭协调、请求上下文和基础错误定义。
+- `framework/http`：Fastify 创建、路由约定、响应协议、错误映射、OpenAPI 和健康检查。
+- `framework/config`：环境变量读取、Schema 校验和类型化配置。
+- `framework/observability`：Pino、请求 ID、Trace ID 和基础指标。
+- `framework/testing`：测试应用工厂、`app.inject()` 辅助能力和 Fixture。
+- `infrastructure`：数据库等具体技术实现。
+- `modules`：按业务能力组织的垂直模块。
+
+第一阶段不将上述目录继续拆成多个 workspace 包。未来如需拆包，仍优先保留在 `apps/backend` 内，并以真实的隔离或复用需求作为依据。
+
+## 5. 依赖规则
+
+允许的主要依赖方向：
+
+```text
+main
+  ↓
+app composition
+  ├── framework
+  ├── infrastructure
+  └── business modules
+
+business controller → application service → repository interface
+                                              ↑
+                              infrastructure implementation
+```
+
+必须通过静态检查约束：
+
+- `framework/**` 禁止引用 `modules/**`。
+- Service 和领域代码禁止引用 `FastifyRequest`、`FastifyReply`。
+- 业务核心禁止直接引用 Drizzle Client。
+- Controller 禁止直接访问数据库。
+- 模块不得通过深层路径访问其他模块的内部实现。
+- 基础设施实现不得反向包含业务规则。
+
+## 6. 模块与依赖装配
+
+### 6.1 模块模型
+
+业务模块直接使用 Fastify Plugin 作为 HTTP 注册和封装单元，不平行设计 `defineModule()` 元数据系统。
+
+每个模块应明确：
+
+- 提供哪些路由。
+- 暴露哪些 Service 接口。
+- 依赖哪些外部 Service 或 Repository。
+- 初始化和关闭时是否持有资源。
+
+模块间交互通过显式导出的 Service 接口完成，不访问对方内部文件。
+
+### 6.2 依赖生命周期
+
+- 数据库连接、日志器和业务 Service 默认为应用级单例。
+- 禁止按请求创建数据库、Redis 或 NATS Client。
+- 请求级信息使用 `AsyncLocalStorage` 保存。
+- Request Context 只包含 `requestId`、`traceId`、认证主体等上下文，不存放业务服务。
+
+## 7. 应用启动与关闭
+
+### 7.1 启动顺序
+
+```text
+加载并校验配置
+→ 创建日志器
+→ 创建数据库连接
+→ 创建 Fastify
+→ 注册框架插件
+→ 注册业务模块
+→ 注册健康检查与 OpenAPI
+→ fastify.ready()
+→ 监听端口
+```
+
+配置或必要基础设施初始化失败时，应用必须快速退出，不能带病启动。
+
+### 7.2 关闭顺序
+
+每个持有资源的组件在创建时注册关闭函数。关闭时按注册的逆序执行：
+
+```text
+收到 SIGTERM / SIGINT
+→ 标记未就绪
+→ 停止接收新请求
+→ 等待在途请求
+→ 关闭 Fastify
+→ 关闭数据库及其他资源
+→ 退出进程
+```
+
+关闭流程必须有总超时。超时后记录尚未关闭的资源并以非零状态退出，避免容器无限挂起。
+
+## 8. HTTP 与 Schema
+
+标准请求链路：
+
+```text
+Fastify Route
+→ TypeBox Validation
+→ Controller
+→ Service / Use Case
+→ Repository
+→ Drizzle
+→ PostgreSQL
+```
+
+约束：
+
+- Controller 仅负责读取协议输入、调用 Service 和构造协议输出。
+- TypeBox 是 HTTP 输入、输出及 OpenAPI 的唯一 Schema 来源。
+- 领域模型不强制复用 HTTP DTO，避免协议变化污染业务核心。
+- Fastify Response Schema 应用于生产序列化，减少重复校验和序列化开销。
+
+### 8.1 响应协议
+
+与现有前端保持一致：
 
 ```json
 {
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
-  }
+  "code": 0,
+  "data": {},
+  "message": "success"
 }
 ```
 
-目标：
+- 成功码固定为 `0`。
+- 业务失败使用稳定、可文档化的非零错误码。
+- HTTP 状态码表达传输语义，响应 `code` 表达业务语义。
+- 错误响应不能包含 SQL、堆栈、密钥或内部实现信息。
 
-- 编译期类型安全
-- API 类型安全
-- 数据访问类型安全
-- 配置类型安全
-- 减少运行时错误
+## 9. 错误体系
 
----
+错误分为三类：
 
-# 四、HTTP 核心：Fastify
+1. 业务错误：预期内的规则失败，例如用户不存在、状态冲突。
+2. 协议错误：输入校验、认证或授权失败。
+3. 系统错误：数据库、网络、编程错误及其他未识别异常。
 
-## 4.1 定位
+业务错误包含：
 
-Fastify 负责：
+- 稳定错误码。
+- 安全的客户端消息。
+- 建议 HTTP 状态码。
+- 可选的安全详情。
+- 原始异常 `cause`。
 
-- HTTP Server
-- Router
-- Request
-- Response
-- Hooks
-- Plugin
-- 生命周期
-- Schema Validation
-- HTTP 层性能
+HTTP 层统一完成错误到响应的映射。未识别异常统一返回内部错误，并记录完整异常及 `requestId`。
 
-Fastify 不直接承担业务架构。
+不要求将所有底层异常转换为大量细分类。只有业务确实需要区分并恢复时，才增加稳定错误类型。
 
----
+## 10. 数据库与事务
 
-## 4.2 原则
+默认技术路线：
 
-Controller 不直接操作数据库。
+- PostgreSQL。
+- Drizzle。
+- 应用级共享连接池。
+- 显式迁移文件。
 
-不推荐：
+### 10.1 Repository
 
-```text
-HTTP
- ↓
-Controller
- ↓
-Database
-```
-
-推荐：
+Repository 按业务能力定义窄接口，例如：
 
 ```text
-HTTP
- ↓
-Controller
- ↓
-Service
- ↓
-Repository
- ↓
-Database
+findUserByEmail
+saveUser
+updateUserStatus
 ```
 
----
+禁止创建隐藏查询能力的通用 CRUD Repository 基类，也不对 Drizzle API 做一比一包装。
 
-# 五、数据校验：TypeBox
+### 10.2 事务
 
-选择：
+- 事务边界由应用 Service / Use Case 声明。
+- Repository 可以接收事务上下文。
+- Repository 不得私自开启无法被上层协调的事务。
+- 涉及多个 Repository 的一致性操作必须处于同一事务边界。
 
-```text
-TypeBox
-```
+### 10.3 迁移
 
-主要原因：
+- Schema 与迁移文件纳入版本控制。
+- CI 验证迁移可以在空数据库执行。
+- 集成测试验证关键升级路径。
+- 生产应用启动时不自动执行破坏性迁移。
+- 破坏性变更采用兼容发布、数据回填和后续清理的分阶段策略。
 
-1. 与 Fastify JSON Schema 模型天然匹配。
-2. TypeScript 类型推导优秀。
-3. 支持运行时校验。
-4. 可以作为 OpenAPI Schema 基础。
-5. 避免 TypeScript 类型与运行时 Schema 分离。
+## 11. 配置
 
-目标：
-
-```text
-TypeBox
-   ↓
-JSON Schema
-   ↓
-Fastify Validation
-   ↓
-OpenAPI
-```
-
----
-
-# 六、数据库：PostgreSQL + Drizzle
-
-## 6.1 PostgreSQL
-
-默认主数据库。
-
-原因：
-
-- 成熟
-- 稳定
-- SQL 能力强
-- 事务能力完善
-- 企业级生态成熟
-- 适合长期项目
-
----
-
-## 6.2 Drizzle
-
-选择：
-
-```text
-Drizzle ORM
-```
-
-原因：
-
-- TypeScript 原生体验好
-- 轻量
-- SQL 表达能力强
-- 类型安全
-- 与底层框架组合灵活
-
-架构：
-
-```text
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
-Drizzle
-    ↓
-PostgreSQL
-```
-
-Repository 层负责隔离数据库实现。
-
-业务层不应该直接依赖 Drizzle API。
-
----
-
-# 七、缓存：Redis
-
-推荐：
-
-```text
-Redis
-ioredis
-```
-
-主要用途：
-
-- Cache
-- Session
-- Distributed Lock
-- Rate Limit
-- 临时数据
-- 分布式状态
-- Queue 辅助
-
-架构：
-
-```text
-Service
-   ↓
-Cache
-   ↓
-Redis
-```
-
-后续可以封装：
-
-```text
-@framework/cache
-```
-
-统一缓存 API。
-
----
-
-# 八、消息系统：NATS
-
-默认消息系统候选：
-
-```text
-NATS
-```
-
-适用于：
-
-- Domain Event
-- 异步任务
-- 服务间通信
-- 消息通知
-- 微服务事件
-
-暂不强制引入 Kafka。
-
-如果未来出现：
-
-- 超大规模事件流
-- 数据管道
-- 日志流
-- 大规模消息持久化
-
-再评估 Kafka。
-
----
-
-# 九、日志系统：Pino
-
-使用：
-
-```text
-Pino
-```
-
-Fastify 原生生态支持良好。
-
-日志要求：
-
-- JSON Structured Logging
-- Request ID
-- Trace ID
-- Error Stack
-- Log Level
-- Production/Development 模式
-
-目标日志结构：
-
-```json
-{
-  "level": 30,
-  "time": 1788500000000,
-  "requestId": "abc123",
-  "traceId": "trace123",
-  "msg": "request completed"
-}
-```
-
----
-
-# 十、可观测性：OpenTelemetry
-
-引入：
-
-```text
-OpenTelemetry
-```
-
-统一追踪：
-
-```text
-HTTP
- ↓
-Controller
- ↓
-Service
- ↓
-PostgreSQL
- ↓
-Redis
- ↓
-NATS
-```
-
-目标：
-
-- Trace
-- Span
-- Metrics
-- Logs 关联
-- Request ID
-- Trace ID
-
-未来可以接入：
-
-- Grafana
-- Jaeger
-- Grafana Tempo
-- Datadog
-
----
-
-# 十一、API 文档：OpenAPI + Swagger
-
-目标：
-
-```text
-TypeBox
-   ↓
-Fastify Schema
-   ↓
-OpenAPI
-   ↓
-Swagger UI
-```
-
-原则：
-
-> API Schema 尽可能只维护一份。
-
-避免：
-
-```text
-TypeScript Type
-+
-Validation Schema
-+
-Swagger Schema
-```
-
-三份重复定义。
-
----
-
-# 十二、认证与权限：Auth Framework
-
-设计独立模块：
-
-```text
-@framework/auth
-```
-
-支持：
-
-```text
-JWT
-API Key
-OAuth2
-Session
-```
-
-权限体系：
-
-```text
-Authentication
-       ↓
-Authorization
-       ↓
-RBAC / ABAC
-       ↓
-Controller
-```
-
----
-
-# 十三、配置系统：Config
-
-设计：
-
-```text
-@framework/config
-```
-
-配置来源：
+配置来源以环境变量为主：
 
 ```text
 Environment Variables
-        ↓
-Schema Validation
-        ↓
-Typed Config
-        ↓
-Application
+→ TypeBox Schema Validation
+→ Typed Config
+→ Application
 ```
 
-例如：
+要求：
+
+- 所有必要配置在启动阶段完成校验。
+- 业务代码不直接读取 `process.env`。
+- 配置对象默认只读。
+- 密钥不写入仓库，不打印到日志。
+- 配置错误必须包含配置项名称和修复方向，但不能暴露密钥值。
+
+## 12. 日志与可观测性
+
+第一阶段使用 Pino 提供结构化日志，至少包含：
+
+- 时间与日志级别。
+- 服务和环境标识。
+- `requestId`。
+- `traceId`（存在时）。
+- 安全的用户标识（存在时）。
+- 错误类型、消息和堆栈。
+
+日志必须脱敏：
+
+- 密码。
+- Authorization。
+- Cookie。
+- Access Token 和 Refresh Token。
+- 数据库连接串。
+- 其他配置声明的敏感字段。
+
+第一阶段不要求完整 OpenTelemetry 自动插桩，但 Request Context 和日志字段必须预留 Trace 关联能力。出现跨进程调用和分布式排障需求后，再引入 OpenTelemetry Adapter。
+
+## 13. 认证与授权
+
+真实垂直切片第一版仅实现 JWT，以验证认证边界，不同时实现其他认证方式。
 
 ```text
-APP_ENV
-PORT
-DATABASE_URL
-REDIS_URL
-NATS_URL
-JWT_SECRET
-```
-
-启动阶段必须完成配置校验。
-
-配置错误应在 Application 启动阶段直接失败，而不是运行过程中才发现。
-
----
-
-# 十四、错误处理
-
-设计统一错误体系：
-
-```text
-@framework/errors
-```
-
-建议：
-
-```text
-FrameworkError
-├── ValidationError
-├── AuthenticationError
-├── AuthorizationError
-├── NotFoundError
-├── ConflictError
-├── DatabaseError
-└── InternalServerError
-```
-
-HTTP 层统一转换：
-
-```text
-Domain Error
-      ↓
-Framework Error
-      ↓
-HTTP Error Response
-```
-
-避免业务代码直接操作：
-
-```text
-reply.status(...)
-```
-
----
-
-# 十五、DI（Dependency Injection）
-
-初期不强制引入复杂 DI。
-
-第一阶段可以使用明确的构造函数注入：
-
-```typescript
-class UserService {
-  constructor(
-    private readonly userRepository: UserRepository
-  ) {}
-}
-```
-
-未来如果框架出现：
-
-- Singleton
-- Request Scope
-- Factory Provider
-- Lifecycle
-- Module Provider
-
-等需求，再设计统一 DI Container。
-
-原则：
-
-> 不为了模仿 NestJS 而引入复杂 DI。
-
----
-
-# 十六、Module 系统
-
-设计自己的 Module 机制。
-
-目标结构：
-
-```text
-Application
-├── AuthModule
-├── UserModule
-├── OrderModule
-└── PaymentModule
-```
-
-Module 负责：
-
-- 注册 Controller
-- 注册 Service
-- 注册 Repository
-- 注册 Provider
-- 注册 Plugin
-- 管理依赖关系
-
-示例：
-
-```typescript
-export const UserModule = defineModule({
-  providers: [
-    UserService,
-    UserRepository
-  ],
-  controllers: [
-    UserController
-  ]
-})
-```
-
-具体 API 待后续设计。
-
----
-
-# 十七、生命周期
-
-Framework 需要统一生命周期：
-
-```text
-create
-  ↓
-configure
-  ↓
-register
-  ↓
-initialize
-  ↓
-ready
-  ↓
-start
-  ↓
-running
-  ↓
-shutdown
-```
-
-关闭阶段：
-
-```text
-SIGTERM
-   ↓
-Stop Accepting Requests
-   ↓
-Drain Connections
-   ↓
-Close NATS
-   ↓
-Close Redis
-   ↓
-Close Database
-   ↓
-Exit
-```
-
-必须考虑 Graceful Shutdown。
-
----
-
-# 十八、测试：Vitest
-
-选择：
-
-```text
-Vitest
-```
-
-测试层次：
-
-```text
-Unit Test
-Integration Test
-API Test
-E2E Test
-```
-
-Fastify API 测试优先使用：
-
-```typescript
-app.inject()
-```
-
-避免普通 API 测试必须启动真实 TCP Server。
-
----
-
-# 十九、项目管理：pnpm Monorepo
-
-推荐：
-
-```text
-pnpm workspace
-```
-
-整体结构：
-
-```text
-project/
-│
-├── apps/
-│   └── api/
-│
-├── packages/
-│   ├── core/
-│   ├── http/
-│   ├── config/
-│   ├── validation/
-│   ├── database/
-│   ├── cache/
-│   ├── logger/
-│   ├── auth/
-│   ├── events/
-│   ├── observability/
-│   └── testing/
-│
-├── package.json
-├── pnpm-workspace.yaml
-└── tsconfig.json
-```
-
----
-
-# 二十、Framework Package 设计
-
-建议第一阶段拆分：
-
-```text
-@framework/core
-```
-
-负责：
-
-- Application
-- Module
-- Lifecycle
-- Provider
-- Error
-- Context
-
----
-
-```text
-@framework/http
-```
-
-负责：
-
-- Fastify
-- Router
-- HTTP Context
-- HTTP Lifecycle
-- HTTP Adapter
-
----
-
-```text
-@framework/config
-```
-
-负责：
-
-- Environment
-- Config Schema
-- Typed Config
-
----
-
-```text
-@framework/validation
-```
-
-负责：
-
-- TypeBox
-- Validation
-- Schema
-
----
-
-```text
-@framework/database
-```
-
-负责：
-
-- Drizzle
-- Database Connection
-- Transaction
-- Repository 基础能力
-
----
-
-```text
-@framework/cache
-```
-
-负责：
-
-- Redis
-- Cache
-- Lock
-- Rate Limit
-
----
-
-```text
-@framework/logger
-```
-
-负责：
-
-- Pino
-- Structured Logging
-- Request ID
-- Trace ID
-
----
-
-```text
-@framework/auth
-```
-
-负责：
-
-- Authentication
-- Authorization
-- JWT
-- RBAC
-
----
-
-```text
-@framework/events
-```
-
-负责：
-
-- Event Bus
-- NATS
-- Domain Event
-
----
-
-```text
-@framework/observability
-```
-
-负责：
-
-- OpenTelemetry
-- Trace
-- Metrics
-- Instrumentation
-
----
-
-```text
-@framework/testing
-```
-
-负责：
-
-- Test Utilities
-- Fastify Test App
-- Mock
-- Fixture
-
----
-
-# 二十一、推荐的业务项目结构
-
-```text
-apps/api/
-│
-├── src/
-│   ├── main.ts
-│   │
-│   ├── app/
-│   │   └── app.module.ts
-│   │
-│   └── modules/
-│       │
-│       ├── user/
-│       │   ├── user.controller.ts
-│       │   ├── user.service.ts
-│       │   ├── user.repository.ts
-│       │   ├── user.schema.ts
-│       │   └── user.module.ts
-│       │
-│       ├── auth/
-│       │   ├── auth.controller.ts
-│       │   ├── auth.service.ts
-│       │   └── auth.module.ts
-│       │
-│       └── order/
-│           ├── order.controller.ts
-│           ├── order.service.ts
-│           ├── order.repository.ts
-│           └── order.module.ts
-│
-└── tests/
-```
-
----
-
-# 二十二、完整请求链路
-
-标准 HTTP 请求：
-
-```text
-Client
-  │
-  ▼
-Fastify
-  │
-  ▼
-Request ID
-  │
-  ▼
-OpenTelemetry
-  │
-  ▼
 Authentication
-  │
-  ▼
-Authorization
-  │
-  ▼
-Validation
-  │
-  ▼
-Controller
-  │
-  ▼
-Service
-  │
-  ├──────────────┐
-  ▼              ▼
-Cache         Repository
-  │              │
- Redis         Drizzle
-                 │
-             PostgreSQL
-  │
-  ▼
-Response
+→ Principal
+→ Authorization Policy
+→ Controller
 ```
 
----
+要求：
 
-# 二十三、性能设计原则
+- Authentication 与 Authorization 分离。
+- 认证插件只负责解析和验证身份。
+- RBAC 由显式授权策略执行。
+- Controller 不能自行解析 Token。
+- 密钥从环境变量或密钥服务加载并在启动时校验。
+- 登录、刷新和退出流程必须与现有前端 Token 协议对齐。
+- 认证失败不能泄露账号是否存在等敏感状态。
 
-核心原则：
+更复杂的 ABAC、OAuth2、API Key 和 Session 必须由后续需求触发。
 
-### 1. HTTP 层保持轻量
+## 14. 健康检查
 
-不要在 Fastify 上堆叠大量无意义抽象。
+健康检查拆分为：
 
-### 2. 避免重复序列化
+- Liveness：进程和事件循环是否仍可工作，不依赖外部系统。
+- Readiness：应用是否可接收业务流量，检查必要的数据库等依赖。
 
-尽可能使用 Fastify Schema。
+开始关闭后 Readiness 必须立即失败，使流量先从当前实例移除。
 
-### 3. 避免过度 DI
+健康接口不能泄露连接串、内部地址、凭据或完整异常。
 
-DI 主要服务于可维护性，不应成为每个请求的额外负担。
+## 15. Redis、消息与分布式能力
 
-### 4. Repository 与数据库连接池复用
+这些能力不属于第一阶段薄内核的前置条件。
 
-禁止请求级创建 Database Client。
+### 15.1 Redis
 
-### 5. Redis Client 全局复用
+出现业务需求后，缓存、限流和分布式锁分别设计：
 
-禁止每次请求创建 Redis Connection。
+- 缓存需要 TTL、键规范、防穿透及失效策略。
+- 限流需要主体、窗口、算法及故障策略。
+- 分布式锁需要租约、续期、所有权和 fencing token 评估。
 
-### 6. NATS Connection 长连接
+不能用一个模糊的 Cache API 同时承载三种语义。
 
-Application 生命周期统一管理。
+### 15.2 NATS
 
-### 7. 日志异步化
+只有出现跨进程异步任务或服务通信需求时才引入 NATS。
 
-避免同步 IO 阻塞事件循环。
+引入前必须明确：
 
-### 8. Graceful Shutdown
+- 消息投递语义。
+- 幂等键。
+- 重试和退避。
+- 死信或失败处理方式。
+- Schema 兼容策略。
+- 消费者关闭与消息排空。
 
-生产环境必须支持容器编排环境下的安全退出。
+数据库状态与事件需要原子一致时采用 Outbox，禁止依赖“提交数据库后直接发送消息”的双写方式。
 
----
+### 15.3 外部调用
 
-# 二十四、架构原则
+- 所有网络调用必须配置超时。
+- 只有可证明幂等的操作才能自动重试。
+- 重试必须有次数上限、退避和抖动。
+- 必须区分必要依赖和可降级依赖。
 
-## 原则 1：Framework 与 Business 分离
+## 16. 测试策略
+
+### 16.1 单元测试
+
+- 测试 Service、策略和纯函数。
+- 使用显式 Fake 或 Stub。
+- 不启动 Fastify，不连接真实基础设施。
+
+### 16.2 集成测试
+
+- 测试 Repository、事务和迁移。
+- 使用隔离的真实 PostgreSQL。
+- 不使用行为差异明显的内存数据库代替 PostgreSQL。
+
+### 16.3 API 测试
+
+- 使用 `app.inject()`。
+- 验证 TypeBox Schema、认证、授权、错误映射和响应契约。
+- 一般 API 测试不启动真实 TCP Server。
+
+### 16.4 E2E 测试
+
+E2E 仅覆盖真实进程启动、监听、信号关闭和部署配置，不重复全部 API 测试。
+
+### 16.5 架构与契约测试
+
+- 静态验证依赖方向。
+- 验证 `{ code, data, message }` 契约。
+- 验证稳定错误码。
+- 验证 OpenAPI 文档可生成且与路由一致。
+
+## 17. 性能设计与验收
+
+### 17.1 运行时原则
+
+- HTTP 热路径保持轻量。
+- 不在请求期间构建依赖图。
+- 数据库等 Client 全局复用。
+- 使用 Fastify Schema 完成验证和序列化。
+- 生产日志避免同步阻塞输出。
+- 避免为类型包装而增加无业务价值的对象分配。
+
+### 17.2 基准场景
+
+以同一环境中的裸 Fastify 为基线，分别测试：
+
+1. 空 JSON 路由。
+2. TypeBox 输入和输出 Schema 路由。
+3. 含上下文、日志和统一响应的框架路由。
+4. 认证与用户真实业务链路。
+
+固定以下条件：
+
+- Node.js 版本。
+- CPU 和内存限制。
+- 并发度。
+- 预热与采样时间。
+- 日志级别及输出目标。
+- 数据库连接池配置。
+
+### 17.3 性能预算
+
+- 薄框架在空路由上的吞吐损耗不超过裸 Fastify 的 10%。
+- 薄框架引入的 p95 延迟增量不超过 1 ms。
+- 真实业务链路另行记录数据库和认证开销，不将其错误归因于框架层。
+
+共享 CI Runner 只记录趋势，不作为硬阻断。固定性能环境中的显著预算回退才阻断发布。
+
+## 18. 实施里程碑
+
+本文仅定义后续路线，不代表已经批准进入开发。
+
+### 里程碑 1：技术 PoC
+
+验证：
+
+- Fastify Plugin 与业务模块边界。
+- TypeBox、Fastify Schema 与 OpenAPI 单一来源。
+- 显式依赖装配。
+- Request Context。
+- 资源逆序关闭。
+- 基础性能预算。
+
+验收结果必须包含可运行 PoC、测试结果、基准数据和 ADR。
+
+### 里程碑 2：可运行薄内核
+
+范围：
+
+- 配置校验。
+- HTTP 与响应协议。
+- 错误映射。
+- 请求上下文。
+- Pino 日志及脱敏。
+- OpenAPI。
+- Liveness、Readiness。
+- Graceful Shutdown。
+- `app.inject()` 测试工具。
+
+### 里程碑 3：真实垂直切片
+
+范围：
+
+- PostgreSQL 和 Drizzle。
+- Schema 与迁移。
+- 认证模块。
+- 用户模块。
+- Repository 和事务边界。
+- 与现有前端响应及 Token 契约对齐。
+
+只有经过该切片验证的重复模式，才可以提升为框架公共约定。
+
+### 里程碑 4：稳定化
+
+范围：
+
+- 增加第二个业务模块验证边界。
+- 架构依赖检查。
+- 故障路径和关闭测试。
+- 安全检查。
+- 性能回归。
+- 完善 ADR 和开发文档。
+
+Redis、NATS 和完整 OpenTelemetry 必须由明确业务需求单独立项。
+
+## 19. 技术决策
+
+| 技术或方向 | 决策 | 说明 |
+| --- | --- | --- |
+| Node.js | 采用 | 使用仓库统一支持的 Node.js 版本 |
+| TypeScript Strict | 采用 | 启用严格类型检查 |
+| Fastify | 采用 | HTTP、插件封装和生命周期基础 |
+| TypeBox | 采用 | HTTP Schema、校验和 OpenAPI 来源 |
+| PostgreSQL | 采用 | 默认关系数据库 |
+| Drizzle | 采用 | 数据访问和迁移技术 |
+| Pino | 采用 | 结构化日志 |
+| Vitest | 采用 | 单元、集成和 API 测试 |
+| 构造函数/工厂注入 | 采用 | 第一阶段显式装配依赖 |
+| 自研 DI Container | 暂不采用 | 等真实作用域和 Provider 需求出现 |
+| 自研 Module 元数据 | 不采用 | 复用 Fastify Plugin |
+| Redis | 延后 | 由缓存、限流或锁的真实需求触发 |
+| NATS | 延后 | 由跨进程异步需求触发 |
+| OpenTelemetry | 延后完整接入 | 第一阶段只预留上下文边界 |
+| 模块化单体 | 采用 | 未来 12 个月主要部署形态 |
+| 公共 npm 发布 | 不采用 | 第一阶段仅限当前 Monorepo |
+
+## 20. PoC 验证清单
+
+进入正式框架实现前，PoC 必须回答：
+
+1. Fastify Plugin 能否完整承担模块注册、封装和依赖顺序。
+2. 显式工厂能否满足应用级单例和测试替换。
+3. `AsyncLocalStorage` 在请求、异常和异步调用中是否保持上下文。
+4. TypeBox Schema 能否同时驱动校验、序列化和 OpenAPI。
+5. 错误映射是否能稳定输出前端响应契约。
+6. 数据库事务上下文能否跨多个 Repository 协调。
+7. 关闭流程能否停止流量、等待在途请求并逆序释放资源。
+8. 框架热路径是否满足性能预算。
+9. 测试应用能否按需替换依赖且不启动 TCP Server。
+10. 目录和导入规则能否通过自动检查持续约束。
+
+每一项必须以测试、基准或最小实验结果作答，不能仅凭设计推断。
+
+## 21. 完成标准
+
+一项框架能力只有同时满足以下条件才视为完成：
+
+- 至少被一个真实业务切片使用。
+- 有明确职责、公共接口和依赖方向。
+- 具有正常、异常和资源关闭测试。
+- 有文档化的错误及运维行为。
+- 有性能结果，或已证明不处于请求热路径。
+- 关键取舍已记录为 ADR。
+
+## 22. 主要风险及控制
+
+### 22.1 重复建设成熟框架能力
+
+控制方式：优先复用 Fastify Plugin 和 Hook；新增框架 API 前必须记录 Fastify 原生能力不足之处。
+
+### 22.2 过度拆包
+
+控制方式：第一阶段维持 `apps/backend` 单一 workspace 和目录级边界，只在真实隔离需求出现后拆包。
+
+### 22.3 Repository 成为低能力 ORM
+
+控制方式：仅定义业务需要的窄接口，不建设通用 CRUD 基类。
+
+### 22.4 为可替换性制造无效抽象
+
+控制方式：只隔离业务与具体 Client，不提前承诺技术可无成本替换。
+
+### 22.5 性能目标缺乏证据
+
+控制方式：以裸 Fastify 为可重复基线，分别衡量框架和真实业务链路。
+
+### 22.6 分布式能力过早引入
+
+控制方式：Redis、NATS 和完整 OpenTelemetry 均设置业务需求触发条件。
+
+## 23. 结论
+
+最终路线为：
 
 ```text
-Framework
-    ↓
-Infrastructure
-    ↓
-Business
+Fastify 原生机制
+→ apps/backend 内的薄框架内核
+→ 认证 + 用户 + PostgreSQL 真实垂直切片
+→ 根据真实重复点形成公共约定
+→ 第二个业务模块验证稳定性
+→ 按需求引入分布式能力
 ```
 
-业务代码不能反向污染 Framework。
+框架建设的核心不是增加抽象数量，而是在保持 Fastify 性能和机制优势的前提下，提供可验证的工程边界、统一行为和长期维护能力。
 
----
-
-## 原则 2：HTTP 与 Domain 分离
-
-业务逻辑不能依赖：
-
-```text
-FastifyRequest
-FastifyReply
-```
-
-Service 应保持 HTTP 无关。
-
----
-
-## 原则 3：数据库与业务隔离
-
-业务层不直接依赖：
-
-```text
-Drizzle API
-```
-
-通过 Repository 隔离。
-
----
-
-## 原则 4：基础设施模块化
-
-未来可以替换：
-
-```text
-Redis → Other Cache
-NATS → Kafka
-Drizzle → Other ORM
-Pino → Other Logger
-```
-
-不应该导致业务层大规模修改。
-
----
-
-# 二十五、第一阶段 MVP
-
-第一阶段不要一次实现全部能力。
-
-建议：
-
-```text
-Phase 1
-├── TypeScript
-├── Fastify
-├── TypeBox
-├── Pino
-├── Config
-├── Error Handling
-├── Module
-├── Lifecycle
-└── Vitest
-```
-
-先形成最小 Framework。
-
----
-
-# 二十六、第二阶段
-
-```text
-Phase 2
-├── PostgreSQL
-├── Drizzle
-├── Repository
-├── Redis
-├── Cache
-└── OpenAPI
-```
-
----
-
-# 二十七、第三阶段
-
-```text
-Phase 3
-├── Authentication
-├── Authorization
-├── JWT
-├── RBAC
-├── NATS
-└── Event Bus
-```
-
----
-
-# 二十八、第四阶段
-
-```text
-Phase 4
-├── OpenTelemetry
-├── Metrics
-├── Distributed Trace
-├── Health Check
-├── Readiness
-└── Graceful Shutdown
-```
-
----
-
-# 二十九、第五阶段
-
-```text
-Phase 5
-├── CLI
-├── Code Generator
-├── Project Template
-├── Documentation
-├── Testing Utilities
-└── Developer Experience
-```
-
-最终目标：
-
-```bash
-framework create my-project
-```
-
-生成：
-
-```text
-my-project/
-├── apps/
-├── modules/
-├── config/
-└── tests/
-```
-
----
-
-# 三十、最终目标
-
-最终形成：
-
-```text
-                @framework/core
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-     @http          @config       @validation
-        │              │              │
-        └──────────────┼──────────────┘
-                       │
-                    Fastify
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-     Database         Cache         Events
-        │              │              │
-     Drizzle          Redis          NATS
-        │
-   PostgreSQL
-
-        ┌────────────────────────────┐
-        │       Observability        │
-        │       OpenTelemetry        │
-        └────────────────────────────┘
-```
-
-框架最终应该做到：
-
-> **业务项目只关心业务，Framework 负责基础设施和工程规范。**
-
----
-
-# 三十一、关键决策记录
-
-| 技术 | 决策 | 原因 |
-|---|---|---|
-| Node.js | 采用 | 成熟、生态完善 |
-| TypeScript | 采用 | 类型安全、工程化 |
-| Fastify | 采用 | 性能、插件体系、Schema |
-| NestJS | 不作为核心 | 抽象较重，不作为底层核心 |
-| Hono | 暂不采用 | 更偏轻量、多运行时 |
-| Elysia | 暂不采用 | 强绑定 Bun |
-| Express | 不采用 | 新项目性能和现代化程度不是最优 |
-| TypeBox | 采用 | Fastify/JSON Schema 结合 |
-| PostgreSQL | 采用 | 企业级关系数据库 |
-| Drizzle | 采用 | 轻量、TypeScript、SQL 能力 |
-| Redis | 采用 | Cache/Lock/Session 等 |
-| Pino | 采用 | 高性能结构化日志 |
-| NATS | 候选采用 | 高性能事件与消息 |
-| OpenTelemetry | 采用 | 统一可观测性 |
-| Vitest | 采用 | TypeScript 测试体验 |
-| pnpm | 采用 | Monorepo |
-
----
-
-# 三十二、当前待验证事项
-
-在正式进入开发前，需要进一步验证：
-
-1. Fastify Plugin 架构如何映射到 Framework Module。
-2. Module 的依赖关系设计。
-3. DI 是否需要独立 Container。
-4. Request Scope 如何实现。
-5. TypeBox 与 OpenAPI 的完整集成方案。
-6. Drizzle Repository 抽象边界。
-7. Redis Cache API 设计。
-8. NATS Event Bus API 设计。
-9. OpenTelemetry 自动 Instrumentation。
-10. Fastify 与 Framework Lifecycle 的映射。
-11. 错误体系和 HTTP Error Response 标准。
-12. Graceful Shutdown 实现。
-13. CLI 和代码生成器设计。
-14. Monorepo Build Pipeline。
-15. 单元测试、集成测试、E2E 测试边界。
-
----
-
-# 三十三、设计结论
-
-本项目最终技术路线确定为：
-
-```text
-Node.js
-+
-TypeScript
-+
-Fastify
-+
-TypeBox
-+
-PostgreSQL
-+
-Drizzle
-+
-Redis
-+
-Pino
-+
-NATS
-+
-OpenTelemetry
-+
-Vitest
-+
-pnpm Monorepo
-```
-
-核心思想：
-
-> **以 Fastify 作为高性能 HTTP 内核，以自研 Framework Layer 提供企业级工程能力。**
-
-不直接复制 NestJS 的架构，而是吸收其工程化思想，同时保持：
-
-- 更低的抽象成本
-- 更高的性能
-- 更强的模块化
-- 更好的基础设施可替换性
-- 更强的 Framework 自主控制能力
-
-该文档作为后续技术设计、PoC、架构评审和正式开发的基础规划文档。
+在新的实现计划获得单独批准前，本项目保持在设计阶段。
