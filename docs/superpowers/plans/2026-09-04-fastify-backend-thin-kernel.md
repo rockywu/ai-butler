@@ -318,6 +318,7 @@ export const LogLevelSchema = Type.Union([
   Type.Literal('error'),
   Type.Literal('fatal'),
   Type.Literal('info'),
+  Type.Literal('silent'),
   Type.Literal('trace'),
   Type.Literal('warn'),
 ]);
@@ -331,7 +332,7 @@ export const AppConfigSchema = Type.Object({
 });
 
 export type AppEnv = 'development' | 'production' | 'test';
-export type LogLevel = 'debug' | 'error' | 'fatal' | 'info' | 'trace' | 'warn';
+export type LogLevel = 'debug' | 'error' | 'fatal' | 'info' | 'silent' | 'trace' | 'warn';
 
 export type AppConfig = Readonly<{
   appEnv: AppEnv;
@@ -362,6 +363,7 @@ const LOG_LEVELS = new Set<LogLevel>([
   'error',
   'fatal',
   'info',
+  'silent',
   'trace',
   'warn',
 ]);
@@ -2172,3 +2174,25 @@ EOF
 - TypeBox 从 `typebox` 导入；Pino 与 `@fastify/swagger-ui` 经 catalog 引入。
 
 完成后不要开始认证与用户垂直切片。先评审 ADR 0004、0005 和设计文档新状态，再执行 [`2026-09-04-fastify-backend-vertical-slice.md`](./2026-09-04-fastify-backend-vertical-slice.md)。
+
+## 规格覆盖
+
+| 规格 | 本计划任务 |
+| --- | --- |
+| §7.1 启动顺序（无数据库） | 任务 7 |
+| §7.2 关闭先未就绪再释放资源 | 任务 5 |
+| §8 / OpenAPI | 任务 3 |
+| §11 类型化配置、业务不读 `process.env` | 任务 1 |
+| §12 Pino 脱敏与 `requestId` / `traceId` | 任务 2 |
+| §14 Liveness / Readiness | 任务 4、ADR 0005 |
+| §16.1 `app.inject()` 测试工厂 | 任务 6 |
+| §18 里程碑 2 | 任务 1–8 |
+| §15 / §19 Redis、NATS、完整 OTEL 延后 | 闸门与非目标 |
+
+## 全局约束
+
+- `createTestApp` 位于 `src/app/create-test-app.ts`；`testConfig()` 位于 `src/framework/testing/test-config.ts`。禁止把工厂放到 `framework/testing/`，以免 `framework → app`。
+- `/readyz` 失败固定 `{ code: 5030, data: null, message: 'not ready' }`。
+- `HealthChecker` 是注入检查器的类型名，不要另造 `ReadinessChecker`。
+- `AppConfig` 必须保留 `openapiUiEnabled`；`logLevel` 含 `silent`。
+- 本计划无数据库连接、无业务表。

@@ -24,6 +24,15 @@
 
 所有服务端代码、测试、迁移、基准和 ADR 只允许出现在 `apps/backend`。禁止引入 Redis、NATS、Kafka、完整 OpenTelemetry、CLI、OAuth2、Session、API Key、DI Container、`defineModule()`。第二个业务模块禁止做成联系人产品。
 
+## 全局约束
+
+- `createTestApp` 位于 `src/app/create-test-app.ts`；`testConfig()` 位于 `src/framework/testing/test-config.ts`。
+- `/readyz` 失败固定 `{ code: 5030, data: null, message: 'not ready' }`。
+- 未知错误固定 `{ code: 5000, data: null, message: 'Internal server error' }`。
+- 未认证 `GET /user/info` 为 HTTP 401 / `code` `1101`。
+- `AuthService` 只能依赖 `login-audit.service.ts` 导出的接口。
+- `benchmark` 默认不 enforce。
+
 ---
 
 ## 文件结构
@@ -720,13 +729,59 @@ EOF
 
 - [ ] **步骤 1：编写 readiness 失败与慢 close 超时测试**
 
-创建 `health.failure.test.ts`：用 `createTestApp({ checkers: [{ name: 'database', check: async () => { throw new Error(\`database ping failed ${leaked}\`); } }] })` 访问 `/readyz`。断言 HTTP 503、body 为 `{ code: 5030, data: null, message: 'Service unavailable' }`，且不含 `super-secret`、`postgres://`、`db.internal`。同时断言 `/livez` 仍为 200。
+`/readyz` 失败文案必须与薄内核一致：`{ code: 5030, data: null, message: 'not ready' }`。不要改成 `Service unavailable`。
 
-若薄内核 `checkers` 是 `Record<string, () => Promise<void>>`，把测试改成对象形式，不要改路径。
-
-在 `shutdown.test.ts` 追加：
+创建 `apps/backend/src/framework/http/health.failure.test.ts`：
 
 ```ts
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { createTestApp } from '../../app/create-test-app';
+
+describe('readiness failure', () => {
+  let app: Awaited<ReturnType<typeof createTestApp>> | undefined;
+
+  afterEach(async () => {
+    await app?.close();
+  });
+
+  it('returns a fixed 503 envelope and never leaks connection strings', async () => {
+    const leaked = 'postgres://backend:super-secret@db.internal/app';
+    app = await createTestApp({
+      checkers: [
+        {
+          async check() {
+            throw new Error(`database ping failed ${leaked}`);
+          },
+          name: 'database',
+        },
+      ],
+    });
+
+    const ready = await app.inject({ method: 'GET', url: '/readyz' });
+    const live = await app.inject({ method: 'GET', url: '/livez' });
+
+    expect(ready.statusCode).toBe(503);
+    expect(ready.json()).toEqual({
+      code: 5030,
+      data: null,
+      message: 'not ready',
+    });
+    expect(ready.body).not.toContain('super-secret');
+    expect(ready.body).not.toContain('postgres://');
+    expect(ready.body).not.toContain('db.internal');
+    expect(live.statusCode).toBe(200);
+  });
+});
+```
+
+若薄内核 `checkers` 已是 `{ name, check }[]`，保持该形状。不要改成 `Record<string, () => Promise<void>>`。
+
+在 `apps/backend/src/framework/core/shutdown.test.ts` 追加：
+
+```ts
+import { createShutdown, runShutdown } from './shutdown';
+
 describe('runShutdown', () => {
   it('returns 1 when shutdown times out', async () => {
     const shutdown = createShutdown({
@@ -746,7 +801,43 @@ describe('runShutdown', () => {
 });
 ```
 
-创建 `shutdown-timeout.test.ts`：`createTestApp({ extraClosers: [{ name: 'slow-resource', close: () => new Promise(() => {}) }], shutdownTimeoutMs: 25 })`。断言 `app.shutdown()` 拒绝 `Shutdown timed out after 25ms`，随后 `runShutdown(app.shutdown)` 得到 `1`，且不得调用 `process.exit`。
+创建 `apps/backend/src/app/shutdown-timeout.test.ts`：
+
+```ts
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { runShutdown } from '../framework/core/shutdown';
+import { createTestApp } from './create-test-app';
+
+describe('createApp shutdown timeout', () => {
+  let app: Awaited<ReturnType<typeof createTestApp>> | undefined;
+
+  afterEach(async () => {
+    await app?.close();
+  });
+
+  it('rejects the decorated shutdown and maps timeout to exit code 1', async () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit must not be called');
+    }) as never);
+
+    app = await createTestApp({
+      extraClosers: [
+        {
+          close: () => new Promise(() => {}),
+          name: 'slow-resource',
+        },
+      ],
+      shutdownTimeoutMs: 25,
+    });
+
+    await expect(app.shutdown()).rejects.toThrow('Shutdown timed out after 25ms');
+    await expect(runShutdown(app.shutdown)).resolves.toBe(1);
+    expect(exitSpy).not.toHaveBeenCalled();
+    exitSpy.mockRestore();
+  });
+});
+```
 
 - [ ] **步骤 2：运行测试验证失败**
 
@@ -821,13 +912,101 @@ EOF
 
 - [ ] **步骤 1：编写安全回归测试**
 
-`security.test.ts` 覆盖三件事：
+创建 `apps/backend/src/framework/http/security.test.ts`：
 
-1. `probeService.read` 抛出含 SQL、堆栈、`postgres://backend:super-secret@db/app` 的 Error；`GET /poc/ping` 返回 `{ code: 5000, data: null, message: 'Internal server error' }`，body 不含 `super-secret`、`select *`、`auth.service.ts:88`、`DATABASE_URL`、`postgres://`。
-2. 自定义 logger stream 接收 `POST /auth/login`，headers 含 `Bearer secret-access-token` 与 `cookie: jwt=secret-refresh-token`，payload 含 `password: '123456'`。合并日志不得包含这些明文，必须包含 `[Redacted]`。
-3. 无 Authorization 访问 `GET /user/info` 为 401，body 不含 `stack` / 明文 jwt。
+```ts
+import { Writable } from 'node:stream';
 
-若薄内核把 redact 固定在 `createLogger()` 内部，则通过 `loggerDestination` 注入 stream，不要复制一套新的脱敏逻辑。
+import { afterEach, describe, expect, it } from 'vitest';
+
+import { createTestApp } from '../../app/create-test-app';
+import { createLogger } from '../observability/logger';
+import { testConfig } from '../testing/test-config';
+
+describe('security regressions', () => {
+  let app: Awaited<ReturnType<typeof createTestApp>> | undefined;
+
+  afterEach(async () => {
+    await app?.close();
+  });
+
+  it('maps unknown errors to a safe 500 envelope', async () => {
+    const error = new Error(
+      'select * from users failed postgres://backend:super-secret@db/app DATABASE_URL=postgres://backend:super-secret@db/app at auth.service.ts:88',
+    );
+    error.stack = `${error.message}\n    at AuthService.login (auth.service.ts:88:11)`;
+
+    app = await createTestApp({
+      dependencies: {
+        probeService: {
+          read() {
+            throw error;
+          },
+        },
+      },
+    });
+
+    const response = await app.inject({ method: 'GET', url: '/poc/ping' });
+
+    expect(response.statusCode).toBe(500);
+    expect(response.json()).toEqual({
+      code: 5000,
+      data: null,
+      message: 'Internal server error',
+    });
+    expect(response.body).not.toContain('super-secret');
+    expect(response.body).not.toContain('select *');
+    expect(response.body).not.toContain('auth.service.ts:88');
+    expect(response.body).not.toContain('DATABASE_URL');
+    expect(response.body).not.toContain('postgres://');
+  });
+
+  it('redacts credentials from login request logs', async () => {
+    const chunks: string[] = [];
+    const destination = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(String(chunk));
+        callback();
+      },
+    });
+    const logger = createLogger(testConfig({ logLevel: 'info' }), destination);
+
+    app = await createTestApp({ logger });
+
+    await app.inject({
+      headers: {
+        authorization: 'Bearer secret-access-token',
+        cookie: 'jwt=secret-refresh-token',
+      },
+      method: 'POST',
+      payload: { password: '123456', username: 'vben' },
+      url: '/auth/login',
+    });
+
+    const text = chunks.join('');
+    expect(text).toContain('[Redacted]');
+    expect(text).not.toContain('secret-access-token');
+    expect(text).not.toContain('secret-refresh-token');
+    expect(text).not.toContain('123456');
+  });
+
+  it('returns 401 without leaking stack or jwt for missing bearer', async () => {
+    app = await createTestApp();
+
+    const response = await app.inject({ method: 'GET', url: '/user/info' });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toMatchObject({
+      code: 1101,
+      message: 'Unauthorized Exception',
+    });
+    expect(response.body).not.toContain('stack');
+    expect(response.body).not.toMatch(/eyJ[A-Za-z0-9_-]+\./);
+  });
+});
+```
+
+若薄内核把 redact 固定在 `createLogger()` 内部，则按上例通过 destination 注入 stream，不要复制一套新的脱敏逻辑。`createTestApp` / `createApp` 若尚不接受 Pino 实例作 `logger`，本任务只把该项接到已有 `loggerInstance` 选项，不要新造 logger 工厂。
 
 - [ ] **步骤 2：运行测试验证失败**
 
@@ -877,9 +1056,84 @@ EOF
 
 - [ ] **步骤 1：扩展 PoC 进程测试**
 
-用 `spawn(process.execPath, ['dist/main.js'], { env: { ...process.env, PORT: '0', HOST: '127.0.0.1', LOG_LEVEL: 'info' } })`。从 stdout/stderr 解析 `Server listening at http://127.0.0.1:<port>`（若只有 JSON 日志，同时匹配 `"address":"http://127.0.0.1:`）。`fetch(${url}/livez)` 期望 200。发送 `SIGTERM` 后 10 秒内 `exitCode === 0` 且 `signal === null`。不要在此文件覆盖 `/auth/login` 等 API。
+修改 `apps/backend/tests/shutdown.e2e.test.ts`：
 
-垂直切片之后启动需要 `DATABASE_URL` 和 JWT 密钥：通过 `...process.env` 传入。没有数据库时本用例应失败并暴露启动错误，而不是跳过，也不得改成 `app.inject()`。
+```ts
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { fileURLToPath } from 'node:url';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+const MAIN = fileURLToPath(new URL('../dist/main.js', import.meta.url));
+
+describe('process shutdown e2e', () => {
+  let child: ReturnType<typeof spawn> | undefined;
+
+  afterEach(async () => {
+    if (!child || child.exitCode !== null || child.signalCode !== null) {
+      return;
+    }
+    child.kill('SIGTERM');
+    await once(child, 'exit');
+  });
+
+  it('listens on PORT=0 and exits 0 after SIGTERM', async () => {
+    const chunks: string[] = [];
+    child = spawn(process.execPath, [MAIN], {
+      env: {
+        ...process.env,
+        HOST: '127.0.0.1',
+        LOG_LEVEL: 'info',
+        PORT: '0',
+      },
+    });
+    child.stdout?.setEncoding('utf8');
+    child.stderr?.setEncoding('utf8');
+    child.stdout?.on('data', (chunk: string) => chunks.push(chunk));
+    child.stderr?.on('data', (chunk: string) => chunks.push(chunk));
+
+    const url = await waitForListenUrl(() => chunks.join(''), 10_000);
+    const live = await fetch(`${url}/livez`);
+    expect(live.status).toBe(200);
+
+    child.kill('SIGTERM');
+    const [exitCode, signal] = (await Promise.race([
+      once(child, 'exit'),
+      sleep(10_000).then(() => {
+        throw new Error('process did not exit within 10s');
+      }),
+    ])) as [number | null, NodeJS.Signals | null];
+
+    expect(exitCode).toBe(0);
+    expect(signal).toBeNull();
+  }, 30_000);
+});
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForListenUrl(
+  readOutput: () => string,
+  timeoutMs: number,
+): Promise<string> {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const text = readOutput();
+    const pretty = text.match(/Server listening at (http:\/\/127\.0\.0\.1:\d+)/);
+    const json = text.match(/"address"\s*:\s*"(http:\/\/127\.0\.0\.1:\d+)/);
+    const url = pretty?.[1] ?? json?.[1];
+    if (url) {
+      return url;
+    }
+    await sleep(50);
+  }
+  throw new Error(`server listen address not found in output:\n${readOutput()}`);
+}
+```
+
+不要在此文件覆盖 `/auth/login` 等 API。垂直切片之后启动需要 `DATABASE_URL` 和 JWT 密钥：通过 `...process.env` 传入。没有数据库时本用例应失败并暴露启动错误，而不是跳过，也不得改成 `app.inject()`。
 
 - [ ] **步骤 2：在未构建时运行以确认失败模式**
 
@@ -925,7 +1179,33 @@ EOF
 
 - [ ] **步骤 1：为报告格式化编写失败测试**
 
-在现有 `http-overhead.test.ts` 追加：`formatPerformanceReport({...})` 的返回值必须包含 `# Fastify 后端性能回归`、`v24.16.0`、`10000`、`9200`、`8.00%`、`0.500 ms`、`共享 CI 只记录趋势，不作为硬门禁`、`BENCHMARK_ENFORCE`。
+在现有 `apps/backend/benchmarks/http-overhead.test.ts` 追加：
+
+```ts
+import { formatPerformanceReport } from './http-overhead';
+
+describe('formatPerformanceReport', () => {
+  it('renders the measured result and the shared-CI policy', () => {
+    const markdown = formatPerformanceReport({
+      baselineRps: 10_000,
+      frameworkP95Ms: 1.5,
+      frameworkRps: 9200,
+      nodeVersion: 'v24.16.0',
+      overheadPercent: 8,
+      p95DeltaMs: 0.5,
+    });
+
+    expect(markdown).toContain('# Fastify 后端性能回归');
+    expect(markdown).toContain('v24.16.0');
+    expect(markdown).toContain('10000');
+    expect(markdown).toContain('9200');
+    expect(markdown).toContain('8.00%');
+    expect(markdown).toContain('0.500 ms');
+    expect(markdown).toContain('共享 CI 只记录趋势，不作为硬门禁');
+    expect(markdown).toContain('BENCHMARK_ENFORCE');
+  });
+});
+```
 
 - [ ] **步骤 2：运行测试验证失败**
 
@@ -937,7 +1217,36 @@ pnpm exec vitest run --environment node apps/backend/benchmarks/http-overhead.te
 
 - [ ] **步骤 3：实现报告函数，并让默认 benchmark 脚本写入 docs**
 
-导出 `formatPerformanceReport(result)`，生成含环境、测量表、预算结论的 Markdown。`run()` 在写入 `benchmarks/results/latest.json` 之后写入 `docs/performance-regression.md`。仅当 `BENCHMARK_ENFORCE === 'true'` 且预算失败时设置 `process.exitCode = 1`。
+在 `apps/backend/benchmarks/http-overhead.ts` 导出：
+
+```ts
+export interface PerformanceReportInput {
+  baselineRps: number;
+  frameworkP95Ms: number;
+  frameworkRps: number;
+  nodeVersion: string;
+  overheadPercent: number;
+  p95DeltaMs: number;
+}
+
+export function formatPerformanceReport(input: PerformanceReportInput): string {
+  return [
+    '# Fastify 后端性能回归',
+    '',
+    `- Node: ${input.nodeVersion}`,
+    `- 裸 Fastify RPS: ${input.baselineRps}`,
+    `- 框架 RPS: ${input.frameworkRps}`,
+    `- 吞吐损耗: ${input.overheadPercent.toFixed(2)}%`,
+    `- p95 增量: ${input.p95DeltaMs.toFixed(3)} ms`,
+    `- 框架 p95: ${input.frameworkP95Ms.toFixed(3)} ms`,
+    '',
+    '共享 CI 只记录趋势，不作为硬门禁。只有 `BENCHMARK_ENFORCE=true` 才会在预算失败时退出 1。',
+    '',
+  ].join('\n');
+}
+```
+
+`run()` 在写入 `benchmarks/results/latest.json` 之后，用同一份测量结果调用 `formatPerformanceReport` 并写入 `docs/performance-regression.md`。仅当 `BENCHMARK_ENFORCE === 'true'` 且预算失败时设置 `process.exitCode = 1`。
 
 确认脚本：
 
@@ -1000,13 +1309,40 @@ pnpm --filter @ai-butler/backend benchmark
 
 - [ ] **步骤 2：编写 ADR 0008**
 
-创建 `apps/backend/docs/adr/0008-second-module-boundary.md`，固定结构为背景 / 决策 / 替代方案 / 后果：
+创建 `apps/backend/docs/adr/0008-second-module-boundary.md`：
+
+```markdown
+# ADR 0008：第二模块只暴露 Service 边界
+
+**状态：** 接受
+
+## 背景
+
+规格里程碑 4 要求增加第二个业务模块，验证模块不得深层引用 internals。第一个真实切片已经是认证与用户；第二个模块必须足够小，只用来钉死跨模块依赖，而不是顺手做联系人产品。
+
+## 决策
 
 - 第二模块是 `login-audit`，只记录成功登录的 `userId`、`username`、`occurredAt`。
-- `AuthService` 只能 import `login-audit.service.ts`。
-- Drizzle 实现放在 `infrastructure/database`，组合根装配。
-- 管理员查询的授权 `preHandler` 由 `register-modules.ts` 注入。
-- 拒绝：完整联系人模块、认证直接写审计表、NATS 解耦、把审计放进 `framework/`。
+- `AuthService` 只能 import `modules/login-audit/login-audit.service.ts`。
+- Drizzle 实现放在 `infrastructure/database/login-audit.repository.ts`，由 `createDependencies()` 装配。
+- 管理员查询的授权 `preHandler` 由 `register-modules.ts` 注入 `requireRole('admin')`。
+- HTTP 查询走 `GET /login-audit/events`，不进入 `framework/`。
+
+## 替代方案
+
+- 完整联系人模块：拒绝，因为会把稳定化变成第二个产品切片。
+- 认证直接写审计表：拒绝，因为会让 `modules/auth` 依赖 database schema。
+- 用 NATS 解耦：拒绝，第一阶段没有跨进程异步需求。
+- 把审计放进 `framework/`：拒绝，审计是业务事件，不是框架能力。
+
+## 后果
+
+- 后续第三模块必须同样只依赖被导出的 Service 接口。
+- `dependency-cruiser` 禁止 `modules/*` 引用彼此 internals，也禁止业务模块直接引用 `drizzle-orm` / `postgres`。
+- Redis、NATS 和完整 OpenTelemetry 仍需单独规格，不由本模块引入。
+```
+
+把步骤 1 记录的真实退出码写进「后果」或提交说明，禁止编造数字。
 
 - [ ] **步骤 3：更新设计文档状态并写 README**
 
@@ -1018,7 +1354,39 @@ pnpm --filter @ai-butler/backend benchmark
 
 在里程碑 4 下追加：`login-audit` 已作为第二模块接入；架构规则、故障路径、安全回归、进程 E2E 与性能趋势文档已落地。Redis、NATS 和完整 OpenTelemetry 不在本阶段交付。
 
-`apps/backend/README.md` 必须能独立说明：环境（Node/pnpm/Docker）、配置项（不把密钥写入仓库）、`dev`、`test` / `test:integration` / `test:e2e` / `typecheck` / `check:architecture`、`db:generate` / `db:migrate`（生产启动不自动跑破坏性迁移）、`benchmark` 默认不 enforce。
+创建 `apps/backend/README.md`：
+
+````markdown
+# @ai-butler/backend
+
+AI Butler 第一阶段后端：Fastify 薄内核 + 认证/用户切片 + `login-audit`。
+
+## 环境
+
+- Node `^22.18.0 || ^24.12.0`（仓库锁 24.16.0）
+- pnpm `>=11`
+- 集成与 E2E 需要本机 Docker（Testcontainers / PostgreSQL 17）
+
+复制 `apps/backend/.env.example` 到本地环境，不要把真实密钥提交进仓库。
+
+## 命令
+
+在仓库根目录执行：
+
+```bash
+pnpm --filter @ai-butler/backend dev
+pnpm --filter @ai-butler/backend test
+pnpm --filter @ai-butler/backend test:integration
+pnpm --filter @ai-butler/backend test:e2e
+pnpm --filter @ai-butler/backend typecheck
+pnpm --filter @ai-butler/backend check:architecture
+pnpm --filter @ai-butler/backend db:generate
+pnpm --filter @ai-butler/backend db:migrate
+pnpm --filter @ai-butler/backend benchmark
+```
+
+生产启动不自动执行破坏性迁移。`benchmark` 默认只写趋势文档；只有 `BENCHMARK_ENFORCE=true` 才会因预算失败退出 1。
+````
 
 - [ ] **步骤 4：静态检查与仓库状态**
 

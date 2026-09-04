@@ -44,6 +44,35 @@ Redis、NATS、Kafka、OAuth2、Session、CLI、代码生成器和完整 OpenTel
 | 测试应用替换依赖且不启动 TCP | 任务 4 |
 | 目录和导入规则自动约束 | 任务 8 |
 
+## 全局约束
+
+实现者与审查者必须逐字遵守：
+
+- 所有服务端实现、测试、迁移、基准和 ADR 只允许出现在 `apps/backend`，禁止根目录 `packages/backend-*`。
+- 包名为 `@ai-butler/backend`。
+- TypeBox 一律 `import { Type } from 'typebox'`，禁止 `@sinclair/typebox`。
+- 成功响应 `{ code: 0, data, message }`；校验失败 `code` 为 `1000`；未知错误 `code` 为 `5000`，`message` 为 `Internal server error`，不得泄露 SQL、堆栈或密钥。
+- 不引入 DI Container、`defineModule()`、Redis、NATS、Kafka、OAuth2、Session、CLI 或完整 OpenTelemetry。
+- 单元测试命令：`pnpm exec vitest run --environment node <file>`。
+- 后三份计划不得在本计划评审通过前开工。
+
+## 规格覆盖
+
+| 规格 | 本计划任务 |
+| --- | --- |
+| §3 / §6 Fastify Plugin 模块与显式依赖 | 任务 1、4 |
+| §5 / §16.5 单向依赖自动检查 | 任务 8 |
+| §7.2 资源逆序关闭、超时、信号 | 任务 6 |
+| §8 / §8.1 TypeBox 与 `{ code, data, message }` | 任务 1、2、3 |
+| §9 错误映射与安全响应 | 任务 3 |
+| §10 / §10.2 跨 Repository 事务 | 任务 7 |
+| §12 Request Context 与 trace 预留 | 任务 5 |
+| §16.1–16.4 测试分层 | 任务 1–7、6 的 e2e |
+| §16 测试应用不启动 TCP | 任务 4 |
+| §17 裸 Fastify 对照基准 | 任务 9 |
+| §18 里程碑 1 / §20 十项验证 | 任务 10 |
+| §19 / §22 不拆包、不自研 DI/Module | 任务 8、10、ADR 0001–0003 |
+
 ## 文件结构
 
 本计划完成后新增或修改以下文件：
