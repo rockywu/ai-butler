@@ -12,6 +12,7 @@ import {
   pageGapClass,
   primaryBtnClass,
 } from '../_shared/chic-classes';
+import PageShell from '../_shared/page-shell.vue';
 import PreviewModal from '../_shared/preview-modal.vue';
 
 type DhTab = 'avatar' | 'edit' | 'hifi' | 'lib' | 'tts';
@@ -516,370 +517,380 @@ function openPreview(item: (typeof videoLib)[number]) {
 </script>
 
 <template>
-  <div :class="pageGapClass">
-    <div
-      class="flex flex-wrap items-center gap-1 rounded-[10px] border border-[#D8D7D0] bg-[#F9F9F6] p-1"
-    >
-      <button
-        v-for="t in tabs"
-        :key="t.key"
-        class="cursor-pointer rounded-lg px-3.5 py-1.5 text-[12.5px] transition-all"
-        :class="
-          activeTab === t.key
-            ? 'bg-[#0A0A0A] font-semibold text-white'
-            : 'text-[#6B7280] hover:bg-white'
-        "
-        type="button"
-        @click="activeTab = t.key"
+  <PageShell>
+    <div :class="pageGapClass">
+      <div
+        class="flex flex-wrap items-center gap-1 rounded-[10px] border border-[#D8D7D0] bg-[#F9F9F6] p-1"
       >
-        {{ t.label }}
-      </button>
-    </div>
+        <button
+          v-for="t in tabs"
+          :key="t.key"
+          class="cursor-pointer rounded-lg px-3.5 py-1.5 text-[12.5px] transition-all"
+          :class="
+            activeTab === t.key
+              ? 'bg-[#0A0A0A] font-semibold text-white'
+              : 'text-[#6B7280] hover:bg-white'
+          "
+          type="button"
+          @click="activeTab = t.key"
+        >
+          {{ t.label }}
+        </button>
+      </div>
 
-    <!-- 声音复刻 -->
-    <div v-if="activeTab === 'hifi'" class="flex flex-col gap-3.5">
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">我的复刻音色</span>
-            <Tag>一次性消耗 100 算力点 / 条</Tag>
-          </div>
-        </template>
-        <ul class="m-0 list-none p-0">
-          <li
-            v-for="v in voices"
-            :key="v.id"
-            class="flex flex-wrap items-center gap-2.5 border-b border-dashed border-[#E5E7EB] py-2.5 last:border-b-0"
-          >
-            <span
-              class="grid h-7 w-7 place-items-center rounded-full bg-[#F0F0EC] text-[14px]"
-              >🎙</span>
-            <div class="flex-1">
-              <div class="text-[12.5px] font-semibold">{{ v.name }}</div>
-              <div class="text-[11px] text-[#6B7280]">
-                {{ v.gender }} · {{ v.tag }}
+      <!-- 声音复刻 -->
+      <div v-if="activeTab === 'hifi'" class="flex flex-col gap-3.5">
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">我的复刻音色</span>
+              <Tag>一次性消耗 100 算力点 / 条</Tag>
+            </div>
+          </template>
+          <ul class="m-0 list-none p-0">
+            <li
+              v-for="v in voices"
+              :key="v.id"
+              class="flex flex-wrap items-center gap-2.5 border-b border-dashed border-[#E5E7EB] py-2.5 last:border-b-0"
+            >
+              <span
+                class="grid h-7 w-7 place-items-center rounded-full bg-[#F0F0EC] text-[14px]"
+                >🎙</span>
+              <div class="flex-1">
+                <div class="text-[12.5px] font-semibold">{{ v.name }}</div>
+                <div class="text-[11px] text-[#6B7280]">
+                  {{ v.gender }} · {{ v.tag }}
+                </div>
               </div>
-            </div>
-            <Tag v-if="v.status === 'done'" color="success">已完成</Tag>
-            <Tag v-else>训练中 {{ v.progress }}%</Tag>
-            <Button size="small">试听</Button>
-          </li>
-        </ul>
-      </Card>
+              <Tag v-if="v.status === 'done'" color="success">已完成</Tag>
+              <Tag v-else>训练中 {{ v.progress }}%</Tag>
+              <Button size="small">试听</Button>
+            </li>
+          </ul>
+        </Card>
 
-      <Card :bordered="false" :class="cardClass" title="新建声音复刻（高保真）">
-        <HifiForm />
-        <div v-if="hifiMethod === 'online'" class="mt-1 flex flex-col gap-1">
-          <label class="text-[12px] font-medium">朗读文本（跟读 10 句，约 3
-            分钟，请在安静环境用正常语速朗读）</label>
+        <Card
+          :bordered="false"
+          :class="cardClass"
+          title="新建声音复刻（高保真）"
+        >
+          <HifiForm />
+          <div v-if="hifiMethod === 'online'" class="mt-1 flex flex-col gap-1">
+            <label class="text-[12px] font-medium">朗读文本（跟读 10 句，约 3
+              分钟，请在安静环境用正常语速朗读）</label>
+            <div
+              class="rounded-md bg-[#F7F7F4] p-3 text-[12px] leading-[1.9] text-[#6B7280]"
+            >
+              1. 大家好，欢迎来到我的频道。<br />
+              2. 今天给大家分享一个实用的好方法。<br />
+              3. 这款产品的特点非常明显。<br />
+              ……（共 10 句，点击开始录制后逐句跟读）
+            </div>
+          </div>
           <div
-            class="rounded-md bg-[#F7F7F4] p-3 text-[12px] leading-[1.9] text-[#6B7280]"
+            class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
           >
-            1. 大家好，欢迎来到我的频道。<br />
-            2. 今天给大家分享一个实用的好方法。<br />
-            3. 这款产品的特点非常明显。<br />
-            ……（共 10 句，点击开始录制后逐句跟读）
+            🎧 高保真复刻：<b class="text-[#0A0A0A]">100 算力点</b>（一次性）·
+            训练约 30 分钟 · 完成后可在「声音克隆」「数字人精剪」中使用
           </div>
-        </div>
-        <div
-          class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
-        >
-          🎧 高保真复刻：<b class="text-[#0A0A0A]">100 算力点</b>（一次性）·
-          训练约 30 分钟 · 完成后可在「声音克隆」「数字人精剪」中使用
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <Button
-            :class="primaryBtnClass"
-            type="primary"
-            @click="hifiFormApi.validateAndSubmit()"
-          >
-            🎙 提交复刻训练
-          </Button>
-          <Button @click="message.success('已保存草稿')">保存草稿</Button>
-        </div>
-      </Card>
-    </div>
-
-    <!-- 声音克隆 -->
-    <div v-if="activeTab === 'tts'" class="flex flex-col gap-3.5">
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">我的克隆音色</span>
-            <Tag>试听消耗算力点</Tag>
-          </div>
-        </template>
-        <ul class="m-0 list-none p-0">
-          <li
-            v-for="v in cloneVoices"
-            :key="v.id"
-            class="flex flex-wrap items-center gap-2.5 border-b border-dashed border-[#E5E7EB] py-2.5 last:border-b-0"
-          >
-            <span
-              class="grid h-7 w-7 place-items-center rounded-full bg-[#F0F0EC] text-[14px]"
-              >🎙</span>
-            <div class="flex-1">
-              <div class="text-[12.5px] font-semibold">{{ v.name }}</div>
-              <div class="text-[11px] text-[#6B7280]">
-                {{ v.gender }} · {{ v.tag }}
-              </div>
-            </div>
-            <Button size="small">试听</Button>
-          </li>
-        </ul>
-      </Card>
-
-      <Card :bordered="false" :class="cardClass" title="新建克隆音色">
-        <CloneForm />
-        <div class="mt-3">
-          <Button
-            :class="primaryBtnClass"
-            type="primary"
-            @click="cloneFormApi.validateAndSubmit()"
-          >
-            🎙 提交克隆
-          </Button>
-        </div>
-      </Card>
-
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">文本转语音（声音克隆）</span>
-            <Tag>5 算力点 / 百字</Tag>
-          </div>
-        </template>
-        <TtsForm />
-        <div
-          class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
-        >
-          🔊 预计消耗：<b class="text-[#0A0A0A]">5 算力点</b> · 预计时长 15 秒 ·
-          支持导出 MP3 用于数字人精剪
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <Button
-            :class="primaryBtnClass"
-            type="primary"
-            @click="ttsFormApi.validateAndSubmit()"
-          >
-            🔊 生成配音
-          </Button>
-          <Button @click="message.success('已插入到数字人精剪文案中')">
-            直接用于精剪文案
-          </Button>
-        </div>
-        <div
-          v-if="ttsReady"
-          class="mt-3 flex items-center gap-3 rounded-[14px] border border-[#DCDAD4] bg-[#F7F7F4] p-3"
-        >
-          <Button shape="circle" @click="message.success('试听中…（演示）')">
-            ▶
-          </Button>
-          <span class="text-[12px] text-[#6B7280]">配音_知性女声_15s.mp3 · 已生成</span>
-        </div>
-      </Card>
-    </div>
-
-    <!-- 形象定制 -->
-    <div v-if="activeTab === 'avatar'" class="flex flex-col gap-3.5">
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">公共形象库</span>
-            <Tag color="success">免费使用</Tag>
-          </div>
-        </template>
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <div
-            v-for="a in avatarLib"
-            :key="a.id"
-            class="cursor-pointer rounded-[14px] border-2 p-3 text-center transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
-            :class="
-              selectedAvatar === a.id
-                ? 'border-[#0A0A0A] bg-[#F0F0EC]'
-                : 'border-[#E5E7EB] bg-white'
-            "
-            @click="pickAvatar(a.id)"
-          >
-            <div
-              class="mx-auto mb-2 grid h-[52px] w-[52px] place-items-center rounded-full bg-gradient-to-br from-[#F0F0EC] to-[#E8E8E2] text-[24px]"
-            >
-              {{ a.emoji }}
-            </div>
-            <div class="text-[12.5px] font-semibold">{{ a.name }}</div>
-            <div class="mt-[2px] text-[10.5px] text-[#6B7280]">{{ a.tag }}</div>
-            <div
-              v-if="selectedAvatar === a.id"
-              class="mt-1.5 inline-flex text-[10.5px] font-semibold text-[#0A0A0A]"
-            >
-              ✓ 已选择
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">我的形象</span>
-            <Tag>定制 200 算力点 / 个（一次性）</Tag>
-          </div>
-        </template>
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <div
-            v-for="a in myAvatars"
-            :key="a.id"
-            class="rounded-[14px] border-2 border-[#0A0A0A] bg-[#F0F0EC] p-3 text-center"
-          >
-            <div
-              class="mx-auto mb-2 grid h-[52px] w-[52px] place-items-center rounded-full bg-gradient-to-br from-[#F0F0EC] to-[#E8E8E2] text-[24px]"
-            >
-              {{ a.emoji }}
-            </div>
-            <div class="text-[12.5px] font-semibold">{{ a.name }}</div>
-            <div class="mt-[2px] text-[10.5px] text-[#6B7280]">{{ a.tag }}</div>
-            <div
-              class="mt-1.5 inline-flex text-[10.5px] font-semibold text-[#0A0A0A]"
-            >
-              ✓ 已选择
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <Card :bordered="false" :class="cardClass" title="新建形象定制">
-        <AvatarForm />
-        <details
-          class="mt-1 rounded-md border border-dashed border-[#E5E7EB] bg-[#F7F7F4] p-2.5 text-[11.5px] text-[#6B7280]"
-        >
-          <summary
-            class="cursor-pointer text-[12px] font-semibold text-[#111827]"
-          >
-            拍摄要求（展开查看，未达标将导致嘴型不同步或训练失败）
-          </summary>
-          <div class="mt-2 space-y-1 leading-relaxed">
-            <div>✓ 声音与嘴型同步，普通话清晰</div>
-            <div>✓ 脸部清晰，人脸占画面 ≥ 1/4</div>
-            <div>✓ 单人、正面出镜，不要多人或侧脸</div>
-            <div>✓ 光线均衡，避免逆光和过暗环境</div>
-            <div>✓ 避免绿色、浅色、反光材质服装（影响抠像）</div>
-            <div>✓ 不戴眼镜，减少面部遮挡</div>
-            <div>✓ 一镜到底，不切换场景、不加转场和字幕</div>
-          </div>
-        </details>
-        <div
-          class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
-        >
-          🧑‍💼 形象定制：<b class="text-[#0A0A0A]">200 算力点</b>（一次性）·
-          训练约 2 小时 · 完成后可用于数字人精剪
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <Button
-            :class="primaryBtnClass"
-            type="primary"
-            @click="avatarFormApi.validateAndSubmit()"
-          >
-            ✨ 提交定制训练
-          </Button>
-          <Button @click="message.success('已保存草稿')">保存草稿</Button>
-        </div>
-      </Card>
-    </div>
-
-    <!-- 数字人精剪 -->
-    <div v-if="activeTab === 'edit'" class="flex flex-col gap-3.5">
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">数字人视频合成</span>
-            <Tag>50 算力点 / 条</Tag>
-          </div>
-        </template>
-        <EditForm />
-        <span class="mt-1 block text-[11px] text-[#6B7280]">{{
-          dhDurationHint
-        }}</span>
-        <div
-          class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
-        >
-          🎬 本次合成：<b class="text-[#0A0A0A]">50 算力点</b> · 当前余额
-          <b class="text-[#0A0A0A]">{{ dhPoints }}</b> 点 ·
-          完成后自动进入「精剪视频库」
-        </div>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <Button
-            :class="primaryBtnClass"
-            type="primary"
-            @click="editFormApi.validateAndSubmit()"
-          >
-            🎬 生成数字人视频
-          </Button>
-          <Button @click="message.success('已保存为草稿')">保存草稿</Button>
-        </div>
-      </Card>
-    </div>
-
-    <!-- 精剪库 -->
-    <div v-if="activeTab === 'lib'">
-      <Card :bordered="false" :class="cardClass">
-        <template #title>
-          <div class="flex flex-wrap items-center justify-between gap-1">
-            <span class="text-[13px] font-semibold">精剪视频库</span>
+          <div class="mt-3 flex flex-wrap gap-2">
             <Button
-              size="small"
-              @click="message.success('已全部下载到本地（演示）')"
+              :class="primaryBtnClass"
+              type="primary"
+              @click="hifiFormApi.validateAndSubmit()"
             >
-              全部下载
+              🎙 提交复刻训练
+            </Button>
+            <Button @click="message.success('已保存草稿')">保存草稿</Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- 声音克隆 -->
+      <div v-if="activeTab === 'tts'" class="flex flex-col gap-3.5">
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">我的克隆音色</span>
+              <Tag>试听消耗算力点</Tag>
+            </div>
+          </template>
+          <ul class="m-0 list-none p-0">
+            <li
+              v-for="v in cloneVoices"
+              :key="v.id"
+              class="flex flex-wrap items-center gap-2.5 border-b border-dashed border-[#E5E7EB] py-2.5 last:border-b-0"
+            >
+              <span
+                class="grid h-7 w-7 place-items-center rounded-full bg-[#F0F0EC] text-[14px]"
+                >🎙</span>
+              <div class="flex-1">
+                <div class="text-[12.5px] font-semibold">{{ v.name }}</div>
+                <div class="text-[11px] text-[#6B7280]">
+                  {{ v.gender }} · {{ v.tag }}
+                </div>
+              </div>
+              <Button size="small">试听</Button>
+            </li>
+          </ul>
+        </Card>
+
+        <Card :bordered="false" :class="cardClass" title="新建克隆音色">
+          <CloneForm />
+          <div class="mt-3">
+            <Button
+              :class="primaryBtnClass"
+              type="primary"
+              @click="cloneFormApi.validateAndSubmit()"
+            >
+              🎙 提交克隆
             </Button>
           </div>
-        </template>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        </Card>
+
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">文本转语音（声音克隆）</span>
+              <Tag>5 算力点 / 百字</Tag>
+            </div>
+          </template>
+          <TtsForm />
           <div
-            v-for="g in videoLib"
-            :key="g.id"
-            class="overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
+            class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
           >
-            <div
-              class="relative grid aspect-video place-items-center text-[26px] text-white"
-              :style="{ background: g.color }"
+            🔊 预计消耗：<b class="text-[#0A0A0A]">5 算力点</b> · 预计时长 15 秒
+            · 支持导出 MP3 用于数字人精剪
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <Button
+              :class="primaryBtnClass"
+              type="primary"
+              @click="ttsFormApi.validateAndSubmit()"
             >
-              🎬
-              <span
-                class="absolute top-2 left-2 rounded-md bg-black/40 px-1.5 py-0.5 text-[10.5px] text-white"
-                >{{ g.ratio }}</span>
-              <span
-                class="absolute right-2 bottom-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] text-white"
-                >{{ g.dur }}</span>
+              🔊 生成配音
+            </Button>
+            <Button @click="message.success('已插入到数字人精剪文案中')">
+              直接用于精剪文案
+            </Button>
+          </div>
+          <div
+            v-if="ttsReady"
+            class="mt-3 flex items-center gap-3 rounded-[14px] border border-[#DCDAD4] bg-[#F7F7F4] p-3"
+          >
+            <Button shape="circle" @click="message.success('试听中…（演示）')">
+              ▶
+            </Button>
+            <span class="text-[12px] text-[#6B7280]">配音_知性女声_15s.mp3 · 已生成</span>
+          </div>
+        </Card>
+      </div>
+
+      <!-- 形象定制 -->
+      <div v-if="activeTab === 'avatar'" class="flex flex-col gap-3.5">
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">公共形象库</span>
+              <Tag color="success">免费使用</Tag>
             </div>
-            <div class="p-2.5">
-              <div class="mb-1 truncate text-[12.5px] font-semibold">
-                {{ g.title }}
-              </div>
-              <div class="text-[11px] leading-relaxed text-[#6B7280]">
-                {{ g.ratio }} · {{ g.dur }} · 数字人精剪
-              </div>
-            </div>
-            <div class="flex gap-2 px-3 pb-2.5">
-              <Button size="small" @click="openPreview(g)">预览</Button>
-              <Button
-                size="small"
-                @click="message.success('已下载到本地（演示）')"
+          </template>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div
+              v-for="a in avatarLib"
+              :key="a.id"
+              class="cursor-pointer rounded-[14px] border-2 p-3 text-center transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
+              :class="
+                selectedAvatar === a.id
+                  ? 'border-[#0A0A0A] bg-[#F0F0EC]'
+                  : 'border-[#E5E7EB] bg-white'
+              "
+              @click="pickAvatar(a.id)"
+            >
+              <div
+                class="mx-auto mb-2 grid h-[52px] w-[52px] place-items-center rounded-full bg-gradient-to-br from-[#F0F0EC] to-[#E8E8E2] text-[24px]"
               >
-                下载
-              </Button>
-              <Button
-                size="small"
-                danger
-                @click="message.success(`已删除《${g.title}》`)"
+                {{ a.emoji }}
+              </div>
+              <div class="text-[12.5px] font-semibold">{{ a.name }}</div>
+              <div class="mt-[2px] text-[10.5px] text-[#6B7280]">
+                {{ a.tag }}
+              </div>
+              <div
+                v-if="selectedAvatar === a.id"
+                class="mt-1.5 inline-flex text-[10.5px] font-semibold text-[#0A0A0A]"
               >
-                删除
-              </Button>
+                ✓ 已选择
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
 
-    <PreviewModal ref="previewModalRef" />
-  </div>
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">我的形象</span>
+              <Tag>定制 200 算力点 / 个（一次性）</Tag>
+            </div>
+          </template>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div
+              v-for="a in myAvatars"
+              :key="a.id"
+              class="rounded-[14px] border-2 border-[#0A0A0A] bg-[#F0F0EC] p-3 text-center"
+            >
+              <div
+                class="mx-auto mb-2 grid h-[52px] w-[52px] place-items-center rounded-full bg-gradient-to-br from-[#F0F0EC] to-[#E8E8E2] text-[24px]"
+              >
+                {{ a.emoji }}
+              </div>
+              <div class="text-[12.5px] font-semibold">{{ a.name }}</div>
+              <div class="mt-[2px] text-[10.5px] text-[#6B7280]">
+                {{ a.tag }}
+              </div>
+              <div
+                class="mt-1.5 inline-flex text-[10.5px] font-semibold text-[#0A0A0A]"
+              >
+                ✓ 已选择
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card :bordered="false" :class="cardClass" title="新建形象定制">
+          <AvatarForm />
+          <details
+            class="mt-1 rounded-md border border-dashed border-[#E5E7EB] bg-[#F7F7F4] p-2.5 text-[11.5px] text-[#6B7280]"
+          >
+            <summary
+              class="cursor-pointer text-[12px] font-semibold text-[#111827]"
+            >
+              拍摄要求（展开查看，未达标将导致嘴型不同步或训练失败）
+            </summary>
+            <div class="mt-2 space-y-1 leading-relaxed">
+              <div>✓ 声音与嘴型同步，普通话清晰</div>
+              <div>✓ 脸部清晰，人脸占画面 ≥ 1/4</div>
+              <div>✓ 单人、正面出镜，不要多人或侧脸</div>
+              <div>✓ 光线均衡，避免逆光和过暗环境</div>
+              <div>✓ 避免绿色、浅色、反光材质服装（影响抠像）</div>
+              <div>✓ 不戴眼镜，减少面部遮挡</div>
+              <div>✓ 一镜到底，不切换场景、不加转场和字幕</div>
+            </div>
+          </details>
+          <div
+            class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
+          >
+            🧑‍💼 形象定制：<b class="text-[#0A0A0A]">200 算力点</b>（一次性）·
+            训练约 2 小时 · 完成后可用于数字人精剪
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <Button
+              :class="primaryBtnClass"
+              type="primary"
+              @click="avatarFormApi.validateAndSubmit()"
+            >
+              ✨ 提交定制训练
+            </Button>
+            <Button @click="message.success('已保存草稿')">保存草稿</Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- 数字人精剪 -->
+      <div v-if="activeTab === 'edit'" class="flex flex-col gap-3.5">
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">数字人视频合成</span>
+              <Tag>50 算力点 / 条</Tag>
+            </div>
+          </template>
+          <EditForm />
+          <span class="mt-1 block text-[11px] text-[#6B7280]">{{
+            dhDurationHint
+          }}</span>
+          <div
+            class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
+          >
+            🎬 本次合成：<b class="text-[#0A0A0A]">50 算力点</b> · 当前余额
+            <b class="text-[#0A0A0A]">{{ dhPoints }}</b> 点 ·
+            完成后自动进入「精剪视频库」
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <Button
+              :class="primaryBtnClass"
+              type="primary"
+              @click="editFormApi.validateAndSubmit()"
+            >
+              🎬 生成数字人视频
+            </Button>
+            <Button @click="message.success('已保存为草稿')">保存草稿</Button>
+          </div>
+        </Card>
+      </div>
+
+      <!-- 精剪库 -->
+      <div v-if="activeTab === 'lib'">
+        <Card :bordered="false" :class="cardClass">
+          <template #title>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <span class="text-[13px] font-semibold">精剪视频库</span>
+              <Button
+                size="small"
+                @click="message.success('已全部下载到本地（演示）')"
+              >
+                全部下载
+              </Button>
+            </div>
+          </template>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="g in videoLib"
+              :key="g.id"
+              class="overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
+            >
+              <div
+                class="relative grid aspect-video place-items-center text-[26px] text-white"
+                :style="{ background: g.color }"
+              >
+                🎬
+                <span
+                  class="absolute top-2 left-2 rounded-md bg-black/40 px-1.5 py-0.5 text-[10.5px] text-white"
+                  >{{ g.ratio }}</span>
+                <span
+                  class="absolute right-2 bottom-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] text-white"
+                  >{{ g.dur }}</span>
+              </div>
+              <div class="p-2.5">
+                <div class="mb-1 truncate text-[12.5px] font-semibold">
+                  {{ g.title }}
+                </div>
+                <div class="text-[11px] leading-relaxed text-[#6B7280]">
+                  {{ g.ratio }} · {{ g.dur }} · 数字人精剪
+                </div>
+              </div>
+              <div class="flex gap-2 px-3 pb-2.5">
+                <Button size="small" @click="openPreview(g)">预览</Button>
+                <Button
+                  size="small"
+                  @click="message.success('已下载到本地（演示）')"
+                >
+                  下载
+                </Button>
+                <Button
+                  size="small"
+                  danger
+                  @click="message.success(`已删除《${g.title}》`)"
+                >
+                  删除
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <PreviewModal ref="previewModalRef" />
+    </div>
+  </PageShell>
 </template>

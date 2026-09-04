@@ -11,6 +11,8 @@ import {
   Tag,
 } from 'ant-design-vue';
 
+import PageShell from '../_shared/page-shell.vue';
+
 interface Message {
   id: string;
   side: 'left' | 'right';
@@ -305,7 +307,7 @@ watch(filterKey, () => {
 </script>
 
 <template>
-  <div>
+  <PageShell>
     <!-- 移动端（< md）：会话列表 / 聊天面板 互斥显示 -->
     <div class="block md:hidden">
       <div
@@ -755,5 +757,5 @@ watch(filterKey, () => {
         </div>
       </div>
     </div>
-  </div>
+  </PageShell>
 </template>

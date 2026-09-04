@@ -23,6 +23,7 @@ import {
 } from '../_shared/chic-classes';
 import { filterContacts } from '../_shared/contact-filter';
 import { acqPlatformLabels, mockContacts } from '../_shared/mock-data';
+import PageShell from '../_shared/page-shell.vue';
 import ImportModal from './import-modal.vue';
 
 type ModalExpose = {
@@ -141,106 +142,112 @@ function markContact(row: MockContact) {
 </script>
 
 <template>
-  <div :class="pageGapClass">
-    <div class="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4">
-      <div
-        v-for="item in stats"
-        :key="item.label"
-        class="relative overflow-hidden rounded-[15px] border border-[#DCDAD4] bg-white p-3.5 shadow-[0_1px_0_rgba(10,10,10,.04),0_5px_16px_rgba(10,10,10,.035)] sm:p-4"
-      >
-        <div class="mb-1 text-[11.5px] text-[#71716B] sm:mb-1.5 sm:text-[12px]">
-          {{ item.label }}
-        </div>
+  <PageShell>
+    <div :class="pageGapClass">
+      <div class="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-4">
         <div
-          class="text-[20px] font-bold leading-tight text-[#0A0A0A] sm:text-[22px]"
+          v-for="item in stats"
+          :key="item.label"
+          class="relative overflow-hidden rounded-[15px] border border-[#DCDAD4] bg-white p-3.5 shadow-[0_1px_0_rgba(10,10,10,.04),0_5px_16px_rgba(10,10,10,.035)] sm:p-4"
         >
-          {{ item.value }}
-        </div>
-        <div
-          class="mt-[3px] text-[10.5px] sm:text-[11px]"
-          :class="item.positive ? 'text-[#16803C]' : 'text-[#71716B]'"
-        >
-          {{ item.delta }}
-        </div>
-      </div>
-    </div>
-
-    <Card :bordered="false" :class="cardClass">
-      <template #title>
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-[13px] font-semibold">联系人明细</span>
-          <div class="flex items-center gap-2">
-            <Button size="small" @click="onImport">➡ 导入好友任务</Button>
-            <Button
-              :class="primaryBtnClass"
-              size="small"
-              type="primary"
-              @click="onExport"
-            >
-              ⬇ 导出
-            </Button>
+          <div
+            class="mb-1 text-[11.5px] text-[#71716B] sm:mb-1.5 sm:text-[12px]"
+          >
+            {{ item.label }}
+          </div>
+          <div
+            class="text-[20px] font-bold leading-tight text-[#0A0A0A] sm:text-[22px]"
+          >
+            {{ item.value }}
+          </div>
+          <div
+            class="mt-[3px] text-[10.5px] sm:text-[11px]"
+            :class="item.positive ? 'text-[#16803C]' : 'text-[#71716B]'"
+          >
+            {{ item.delta }}
           </div>
         </div>
-      </template>
-
-      <div
-        class="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
-      >
-        <Select
-          v-model:value="query.platform"
-          :options="platformOptions"
-          class="!w-full sm:!w-[120px]"
-        />
-        <Select
-          v-model:value="query.status"
-          :options="statusOptions"
-          class="!w-full sm:!w-[120px]"
-        />
-        <Select
-          v-model:value="query.source"
-          :options="sourceOptions"
-          class="!w-full sm:!w-[200px]"
-        />
-        <Input
-          v-model:value="query.search"
-          allow-clear
-          class="!w-full sm:!w-[200px]"
-          placeholder="搜索联系人 / 联系方式"
-        />
-        <span class="text-[11px] text-[#6B7280]">
-          共 {{ filteredData.length }} 条
-        </span>
       </div>
 
-      <div class="min-w-0 overflow-x-auto">
-        <Grid>
-          <template #contact="{ row }">
+      <Card :bordered="false" :class="cardClass">
+        <template #title>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[13px] font-semibold">联系人明细</span>
             <div class="flex items-center gap-2">
-              <Avatar :size="28" class="!flex-shrink-0">{{ row.ava }}</Avatar>
-              <span class="text-[13px] font-medium">{{ row.name }}</span>
+              <Button size="small" @click="onImport">➡ 导入好友任务</Button>
+              <Button
+                :class="primaryBtnClass"
+                size="small"
+                type="primary"
+                @click="onExport"
+              >
+                ⬇ 导出
+              </Button>
             </div>
-          </template>
-          <template #platform="{ row }">
-            <Tag :color="platformColor(row.platform)">
-              {{ acqPlatformLabels[row.platform] ?? row.platform }}
-            </Tag>
-          </template>
-          <template #status="{ row }">
-            <Tag :color="statusColor(row.status)">{{ row.status }}</Tag>
-          </template>
-          <template #actions="{ row }">
-            <Button size="small" type="link" @click="viewContact">查看</Button>
-            <Button size="small" type="link" @click="followContact(row)">
-              跟进
-            </Button>
-            <Button size="small" type="link" @click="markContact(row)">
-              标记
-            </Button>
-          </template>
-        </Grid>
-      </div>
-    </Card>
+          </div>
+        </template>
 
-    <ImportModal ref="importModalRef" />
-  </div>
+        <div
+          class="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
+        >
+          <Select
+            v-model:value="query.platform"
+            :options="platformOptions"
+            class="!w-full sm:!w-[120px]"
+          />
+          <Select
+            v-model:value="query.status"
+            :options="statusOptions"
+            class="!w-full sm:!w-[120px]"
+          />
+          <Select
+            v-model:value="query.source"
+            :options="sourceOptions"
+            class="!w-full sm:!w-[200px]"
+          />
+          <Input
+            v-model:value="query.search"
+            allow-clear
+            class="!w-full sm:!w-[200px]"
+            placeholder="搜索联系人 / 联系方式"
+          />
+          <span class="text-[11px] text-[#6B7280]">
+            共 {{ filteredData.length }} 条
+          </span>
+        </div>
+
+        <div class="min-w-0 overflow-x-auto">
+          <Grid>
+            <template #contact="{ row }">
+              <div class="flex items-center gap-2">
+                <Avatar :size="28" class="!flex-shrink-0">{{ row.ava }}</Avatar>
+                <span class="text-[13px] font-medium">{{ row.name }}</span>
+              </div>
+            </template>
+            <template #platform="{ row }">
+              <Tag :color="platformColor(row.platform)">
+                {{ acqPlatformLabels[row.platform] ?? row.platform }}
+              </Tag>
+            </template>
+            <template #status="{ row }">
+              <Tag :color="statusColor(row.status)">{{ row.status }}</Tag>
+            </template>
+            <template #actions="{ row }">
+              <Button size="small" type="link" @click="viewContact">
+查看
+</Button>
+              <Button size="small" type="link" @click="followContact(row)">
+                跟进
+              </Button>
+              <Button size="small" type="link" @click="markContact(row)">
+                标记
+              </Button>
+            </template>
+          </Grid>
+        </div>
+      </Card>
+
+      <ImportModal ref="importModalRef" />
+    </div>
+  </PageShell>
 </template>

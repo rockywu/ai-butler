@@ -1,5 +1,0 @@
-/* 与奇克原型 .web-main padding: 14px 对齐；写在路由容器上，避免偏好设置缓存把 layout contentPadding 锁成 0。 */
-.page-route-container {
-  box-sizing: border-box;
-  padding: 14px;
-}

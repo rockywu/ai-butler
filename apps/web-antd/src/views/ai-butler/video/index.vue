@@ -9,6 +9,7 @@ import { Button, Card, message, Radio, Tag } from 'ant-design-vue';
 import { useVbenForm, z } from '#/adapter/form';
 
 import { cardClass, primaryBtnClass } from '../_shared/chic-classes';
+import PageShell from '../_shared/page-shell.vue';
 import PreviewModal from '../_shared/preview-modal.vue';
 import { calcVideoCost } from '../_shared/video-cost';
 
@@ -430,81 +431,84 @@ function openPreview(item: (typeof works)[number]) {
 </script>
 
 <template>
-  <div
-    class="grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-3.5"
-  >
-    <Card :bordered="false" :class="cardClass">
-      <template #title>
-        <div class="flex flex-wrap items-center justify-between gap-1">
-          <span class="text-[13px] font-semibold">视频生成</span>
-          <Tag>消耗算力点</Tag>
-        </div>
-      </template>
-      <Form />
-      <div
-        class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
-      >
-        ⚡ 预计消耗：<b class="text-[#0A0A0A]">{{ cost }}</b> 算力点 · 当前余额
-        <b class="text-[#0A0A0A]">{{ points.toLocaleString('zh-CN') }}</b> 点
-      </div>
-      <Button
-        :class="primaryBtnClass"
-        block
-        class="mt-3"
-        size="large"
-        type="primary"
-        @click="formApi.validateAndSubmit()"
-      >
-        🎬 生成视频
-      </Button>
-    </Card>
-
-    <Card :bordered="false" :class="cardClass">
-      <template #title>
-        <div class="flex flex-wrap items-center justify-between gap-1">
-          <span class="text-[13px] font-semibold">作品库</span>
-          <Tag>共 {{ works.length }} 条</Tag>
-        </div>
-      </template>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <PageShell>
+    <div
+      class="grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-3.5"
+    >
+      <Card :bordered="false" :class="cardClass">
+        <template #title>
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="text-[13px] font-semibold">视频生成</span>
+            <Tag>消耗算力点</Tag>
+          </div>
+        </template>
+        <Form />
         <div
-          v-for="w in works"
-          :key="w.id"
-          class="overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
+          class="mt-3 rounded-md bg-[#F7F7F4] p-2.5 text-[12px] text-[#6B7280]"
         >
-          <div
-            class="relative grid aspect-video place-items-center text-[26px] text-white"
-            :style="{ background: w.color }"
-          >
-            🎬
-            <span
-              class="absolute top-2 left-2 rounded-md bg-black/40 px-1.5 py-0.5 text-[10.5px] text-white"
-              >{{ w.ratio }}</span>
-            <span
-              class="absolute right-2 bottom-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] text-white"
-              >{{ w.dur }}</span>
+          ⚡ 预计消耗：<b class="text-[#0A0A0A]">{{ cost }}</b> 算力点 ·
+          当前余额
+          <b class="text-[#0A0A0A]">{{ points.toLocaleString('zh-CN') }}</b> 点
+        </div>
+        <Button
+          :class="primaryBtnClass"
+          block
+          class="mt-3"
+          size="large"
+          type="primary"
+          @click="formApi.validateAndSubmit()"
+        >
+          🎬 生成视频
+        </Button>
+      </Card>
+
+      <Card :bordered="false" :class="cardClass">
+        <template #title>
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="text-[13px] font-semibold">作品库</span>
+            <Tag>共 {{ works.length }} 条</Tag>
           </div>
-          <div class="p-3">
-            <div class="mb-1 truncate text-[12.5px] font-semibold">
-              {{ w.title }}
+        </template>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            v-for="w in works"
+            :key="w.id"
+            class="overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.07)]"
+          >
+            <div
+              class="relative grid aspect-video place-items-center text-[26px] text-white"
+              :style="{ background: w.color }"
+            >
+              🎬
+              <span
+                class="absolute top-2 left-2 rounded-md bg-black/40 px-1.5 py-0.5 text-[10.5px] text-white"
+                >{{ w.ratio }}</span>
+              <span
+                class="absolute right-2 bottom-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] text-white"
+                >{{ w.dur }}</span>
             </div>
-            <div class="text-[11px] text-[#6B7280]">
-              {{ w.engine }} · {{ w.ratio }} · {{ w.dur }} · {{ w.time }}
-            </div>
-            <div class="mt-2 flex gap-2">
-              <Button size="small" @click="openPreview(w)">预览</Button>
-              <Button
-                size="small"
-                @click="message.success('已下载到本地（演示）')"
-              >
-                下载
-              </Button>
+            <div class="p-3">
+              <div class="mb-1 truncate text-[12.5px] font-semibold">
+                {{ w.title }}
+              </div>
+              <div class="text-[11px] text-[#6B7280]">
+                {{ w.engine }} · {{ w.ratio }} · {{ w.dur }} · {{ w.time }}
+              </div>
+              <div class="mt-2 flex gap-2">
+                <Button size="small" @click="openPreview(w)">预览</Button>
+                <Button
+                  size="small"
+                  @click="message.success('已下载到本地（演示）')"
+                >
+                  下载
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
 
-    <PreviewModal ref="previewModalRef" />
-  </div>
+      <PreviewModal ref="previewModalRef" />
+    </div>
+  </PageShell>
 </template>
