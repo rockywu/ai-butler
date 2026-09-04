@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fastify/swagger": "catalog:",
     "@fastify/type-provider-typebox": "catalog:",
     "fastify": "catalog:",
     "fastify-plugin": "catalog:",

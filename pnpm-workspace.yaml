@@ -47,6 +47,7 @@ catalog:
   '@eslint-community/eslint-plugin-eslint-comments': ^4.7.2
   '@eslint/js': ^10.0.1
   '@faker-js/faker': ^10.5.0
+  '@fastify/swagger': ^9.8.1
   '@fastify/type-provider-typebox': ^6.1.0
   '@iconify/json': ^2.2.504
   '@iconify/tailwind4': ^1.2.3
