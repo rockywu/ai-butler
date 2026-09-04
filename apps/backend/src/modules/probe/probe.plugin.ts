@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import { AppError } from '../../framework/core/app-error';
 import { success } from '../../framework/http/envelope';
 import {
   EchoBodySchema,
@@ -24,4 +25,16 @@ export const probePlugin: FastifyPluginAsyncTypebox = async (app) => {
     },
     async (request) => success(request.body),
   );
+
+  app.get('/poc/errors/business', async () => {
+    throw new AppError({
+      code: 2001,
+      message: 'Probe conflict',
+      statusCode: 409,
+    });
+  });
+
+  app.get('/poc/errors/system', async () => {
+    throw new Error('database-password');
+  });
 };
