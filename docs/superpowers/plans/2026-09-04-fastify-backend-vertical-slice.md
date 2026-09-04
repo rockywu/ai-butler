@@ -29,6 +29,15 @@
 2. 薄内核 8 个任务已完成，ADR 0004–0005 已评审，设计文档状态为「薄内核已实现，等待垂直切片计划」。
 3. 若 PoC 或薄内核修订了 `loadConfig`、`AppConfig`、`createApp`、`createTestApp`、`RequestContext`、`ResourceRegistry`、`createDependencies` 或健康检查接口，**先修订本计划再写代码**。
 
+## 全局约束
+
+- `createTestApp` 位于 `src/app/create-test-app.ts`；`testConfig()` 位于 `src/framework/testing/test-config.ts`。
+- 检查器类型名为 `HealthChecker`，不要另造 `ReadinessChecker`。
+- 扩展 `AppConfig` 时必须保留薄内核的 `openapiUiEnabled`。
+- `/auth/*` 与 `/user/info` 成功 `message` 对齐 mock，使用 `ok`；框架 probe / health 仍用 `success`。
+- `POST /auth/refresh` 成功 body 是 accessToken 原始字符串。
+- 未认证 `1101`，登录/刷新失败 `1103`，缺角色 `1104`。
+
 本计划假设薄内核已提供（名称若有出入，跟随仓库现有导出，不要平行再造一套）：
 
 | 符号 | 预期位置 |
@@ -37,7 +46,8 @@
 | `createLogger` 与 Pino 脱敏 | `src/framework/observability/` |
 | `createApp` / `CreateAppOptions` | `src/app/create-app.ts` |
 | `createDependencies` / `AppDependencies` | `src/app/dependencies.ts` |
-| `createTestApp` | `src/framework/testing/create-test-app.ts` |
+| `createTestApp` | `src/app/create-test-app.ts` |
+| `testConfig` | `src/framework/testing/test-config.ts` |
 | `AppError` | `src/framework/core/app-error.ts` |
 | `success` / `successEnvelopeSchema` | `src/framework/http/envelope.ts` |
 | `RequestContext` / `getRequestContext` | `src/framework/core/request-context.ts` |
@@ -110,11 +120,12 @@ export interface AppConfig {
   readonly appEnv: 'development' | 'production' | 'test';
   readonly host: string;
   readonly logLevel: 'debug' | 'error' | 'fatal' | 'info' | 'silent' | 'trace' | 'warn';
+  readonly openapiUiEnabled: boolean;
   readonly port: number;
 }
 
 export interface CreateAppOptions {
-  checkers?: ReadinessChecker[];
+  checkers?: HealthChecker[];
   config?: AppConfig;
   dependencies?: Partial<AppDependencies>;
   logger?: boolean | object;
@@ -138,7 +149,8 @@ export function createTestApp(options?: CreateAppOptions): Promise<AppInstance>;
 - 修改：`apps/backend/package.json`——加入 `jsonwebtoken`、`@types/jsonwebtoken`、`@fastify/cookie`，扩展 `test:integration`。
 - 修改：`apps/backend/src/framework/config/*`——必填数据库 URL 与 JWT 密钥，长度 ≥ 32。
 - 修改：`apps/backend/src/framework/observability/*`——脱敏 `JWT_ACCESS_SECRET`、`JWT_REFRESH_SECRET` 及配置对象对应字段。
-- 修改：`apps/backend/src/framework/testing/create-test-app.ts`——默认测试配置含 32 位密钥；默认 `skipDatabase: true`。
+- 修改：`apps/backend/src/app/create-test-app.ts`——默认 `skipDatabase: true`。
+- 修改：`apps/backend/src/framework/testing/test-config.ts`——默认测试配置含 32 位密钥、`openapiUiEnabled` 与 `databaseUrl`。
 - 修改：`apps/backend/src/framework/core/request-context.ts`——增加 `Principal`。
 - 修改：`apps/backend/src/app/create-app.ts`——启动顺序加入数据库；注册 cookie / JWT 插件。
 - 修改：`apps/backend/src/app/dependencies.ts`——显式装配 `userRepository`、`authService`、`userService`。
@@ -182,7 +194,8 @@ probe 与 `poc_accounts` **不删除**。
 - 修改：`apps/backend/src/framework/config/` 下现有 schema 与 `loadConfig`
 - 修改：`apps/backend/src/framework/config/` 下现有配置测试
 - 修改：`apps/backend/src/framework/observability/` 下现有 logger 脱敏
-- 修改：`apps/backend/src/framework/testing/create-test-app.ts`
+- 修改：`apps/backend/src/app/create-test-app.ts`
+- 修改：`apps/backend/src/framework/testing/test-config.ts`
 - 创建：`apps/backend/.env.example`
 
 - [ ] **步骤 1：编写失败的配置与脱敏测试**
@@ -241,6 +254,7 @@ it('redacts JWT secret env names and config fields', () => {
     jwtAccessSecret: 'A'.repeat(32),
     jwtRefreshSecret: 'B'.repeat(32),
     logLevel: 'info',
+    openapiUiEnabled: false,
     port: 3000,
   });
 
@@ -302,6 +316,7 @@ export const AppConfigSchema = Type.Object({
     Type.Literal('trace'),
     Type.Literal('silent'),
   ]),
+  openapiUiEnabled: Type.Boolean(),
   port: Type.Integer({ minimum: 1, maximum: 65_535 }),
 });
 
@@ -343,6 +358,7 @@ export function loadConfig(
     jwtAccessSecret: readSecret(env, 'JWT_ACCESS_SECRET'),
     jwtRefreshSecret: readSecret(env, 'JWT_REFRESH_SECRET'),
     logLevel: parseLogLevel(env.LOG_LEVEL),
+    openapiUiEnabled: parseOpenApiUi(env, env.APP_ENV),
     port: parsePort(env.PORT),
   });
 
@@ -365,7 +381,7 @@ Pino `redact.paths` 在薄内核已有 `password`、`authorization`、`cookie`�
 '*.databaseUrl',
 ```
 
-更新 `createTestApp` 默认 `config`，避免任务 1 之后所有薄内核测试因缺密钥失败：
+更新 `apps/backend/src/framework/testing/test-config.ts` 与 `apps/backend/src/app/create-test-app.ts`，避免任务 1 之后所有薄内核测试因缺密钥失败。必须保留薄内核已有的 `openapiUiEnabled`，不要另造 `framework/testing/create-test-app.ts`：
 
 ```ts
 export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
@@ -375,26 +391,13 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     host: '127.0.0.1',
     jwtAccessSecret: 'A'.repeat(32),
     jwtRefreshSecret: 'B'.repeat(32),
-    logLevel: 'silent',
+    logLevel: 'fatal',
+    openapiUiEnabled: true,
     port: 0,
     ...overrides,
   });
 }
 
-export async function createTestApp(options: CreateAppOptions = {}) {
-  return createApp({
-    config: testConfig(options.config),
-    logger: false,
-    skipDatabase: true,
-    ...options,
-    config: testConfig(options.config),
-  });
-}
-```
-
-合并 options 时保证 `testConfig` 生效：显式传入的 `options.config` 覆盖默认测试密钥，但缺字段时仍用 `testConfig` 补齐。更干净的写法：
-
-```ts
 export async function createTestApp(options: CreateAppOptions = {}) {
   return createApp({
     logger: false,
@@ -450,7 +453,8 @@ EOF
 - 修改：`apps/backend/src/infrastructure/database/client.ts`
 - 修改：`apps/backend/src/app/create-app.ts`
 - 修改：`apps/backend/src/app/create-app.test.ts`（若仍直接 `createApp` 且会连库）
-- 修改：`apps/backend/src/framework/testing/create-test-app.ts`
+- 修改：`apps/backend/src/app/create-test-app.ts`
+- 修改：`apps/backend/src/framework/testing/test-config.ts`
 - 创建：`apps/backend/src/infrastructure/database/database-startup.integration.test.ts`
 - 修改：`apps/backend/package.json` 的 `test:integration`
 
@@ -463,7 +467,7 @@ import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../app/create-app';
-import { testConfig } from '../../framework/testing/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 
 describe('database startup', () => {
   let connectionUri = '';
@@ -517,7 +521,8 @@ describe('database startup', () => {
 import { describe, expect, it } from 'vitest';
 
 import { createApp } from './create-app';
-import { createTestApp, testConfig } from '../framework/testing/create-test-app';
+import { createTestApp } from './create-test-app';
+import { testConfig } from '../framework/testing/test-config';
 
 describe('createApp database skip', () => {
   it('skips connecting when skipDatabase is true', async () => {
@@ -596,7 +601,7 @@ export type DatabaseExecutor = Database | Transaction;
 
 ```ts
 export interface CreateAppOptions {
-  checkers?: ReadinessChecker[];
+  checkers?: HealthChecker[];
   config?: AppConfig;
   database?: Database;
   dependencies?: Partial<AppDependencies>;
@@ -1713,7 +1718,8 @@ EOF
 ```ts
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { createTestApp, testConfig } from '../../framework/testing/create-test-app';
+import { createTestApp } from '../../app/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 import { buildSeedRecords } from '../user/user.fixture';
 import { createFakeUserRepository } from '../user/user.repository.fake';
 
@@ -2219,20 +2225,11 @@ EOF
 
 ```ts
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-
-import { createTestApp, testConfig } from '../../framework/testing/create-test-app';
-import { buildSeedRecords } from './user.fixture';
-import { createFakeUserRepository } from './user.repository.fake.ts'.replace('.ts', '');
-```
-
-上面最后一行不要照抄 `.replace`。正确导入：
-
-```ts
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { createTestApp, testConfig } from '../../framework/testing/create-test-app';
+import { createTestApp } from '../../app/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 import { buildSeedRecords } from './user.fixture';
 import { createFakeUserRepository } from './user.repository.fake';
 
@@ -2576,7 +2573,8 @@ import { fileURLToPath } from 'node:url';
 import { type FastifyPluginAsync } from 'fastify';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { createTestApp, testConfig } from '../../framework/testing/create-test-app';
+import { createTestApp } from '../../app/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 import { success } from '../../framework/http/envelope';
 import { buildSeedRecords } from '../user/user.fixture';
 import { createFakeUserRepository } from '../user/user.repository.fake';
@@ -2742,7 +2740,8 @@ EOF
 ```ts
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { createTestApp, testConfig } from '../../framework/testing/create-test-app';
+import { createTestApp } from '../../app/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 import { buildSeedRecords } from '../user/user.fixture';
 import { createFakeUserRepository } from '../user/user.repository.fake';
 
@@ -2859,7 +2858,7 @@ import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../app/create-app';
-import { testConfig } from '../../framework/testing/create-test-app';
+import { testConfig } from '../../framework/testing/test-config';
 import { buildSeedRecords } from '../../modules/user/user.fixture';
 import { createDatabase } from './client';
 import { createDrizzleUserRepository } from './user.repository';
@@ -3065,6 +3064,6 @@ EOF
 
 **2. 占位符扫描：** 无 TODO / TBD / 待定 /「类似任务 N」。各步骤含可运行测试、命令、实现与 commit。
 
-**3. 类型一致性：** `UserRecord`、`PublicUser`、`Principal`、`TokenPrincipal`、`AppConfig.databaseUrl|jwtAccessSecret|jwtRefreshSecret`、`skipDatabase`、`extraPlugins`、错误码 `1101/1103/1104`、cookie 名 `jwt` 在各任务中一致。`description` 仅存库，HTTP 字段名为 `desc`。
+**3. 类型一致性：** `UserRecord`、`PublicUser`、`Principal`、`TokenPrincipal`、`AppConfig.databaseUrl|jwtAccessSecret|jwtRefreshSecret|openapiUiEnabled`、`skipDatabase`、`extraPlugins`、错误码 `1101/1103/1104`、cookie 名 `jwt` 在各任务中一致。`description` 仅存库，HTTP 字段名为 `desc`。`createTestApp` 在 `src/app/create-test-app.ts`，`testConfig` 在 `src/framework/testing/test-config.ts`。检查器类型名为 `HealthChecker`。
 
 在薄内核计划完成并评审通过之前，不要开始实现本计划。
