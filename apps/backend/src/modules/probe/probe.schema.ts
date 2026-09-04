@@ -8,5 +8,8 @@ export const EchoBodySchema = Type.Object({
 
 export const EchoResponseSchema = successEnvelopeSchema(EchoBodySchema);
 export const PingResponseSchema = successEnvelopeSchema(
-  Type.Object({ pong: Type.Boolean() }),
+  Type.Object({
+    pong: Type.Boolean(),
+    source: Type.String(),
+  }),
 );

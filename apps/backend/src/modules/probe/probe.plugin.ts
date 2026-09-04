@@ -1,5 +1,7 @@
 import type { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
+import type { ProbeService } from './probe.service';
+
 import { AppError } from '../../framework/core/app-error';
 import { success } from '../../framework/http/envelope';
 import {
@@ -8,11 +10,17 @@ import {
   PingResponseSchema,
 } from './probe.schema';
 
-export const probePlugin: FastifyPluginAsyncTypebox = async (app) => {
+interface ProbePluginOptions {
+  service: ProbeService;
+}
+
+export const probePlugin: FastifyPluginAsyncTypebox<
+  ProbePluginOptions
+> = async (app, options) => {
   app.get(
     '/poc/ping',
     { schema: { response: { 200: PingResponseSchema } } },
-    async () => success({ pong: true }),
+    async () => success(options.service.read()),
   );
 
   app.post(

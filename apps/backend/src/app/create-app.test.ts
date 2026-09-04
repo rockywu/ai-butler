@@ -17,7 +17,7 @@ describe('createApp', () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
       code: 0,
-      data: { pong: true },
+      data: { pong: true, source: 'real' },
       message: 'success',
     });
   });
