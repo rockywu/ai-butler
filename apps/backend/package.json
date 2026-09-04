@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsdown",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "dev": "tsx watch src/main.ts",
     "start": "node dist/main.js",
     "test": "vitest run --environment node --exclude '**/*.integration.test.ts' --exclude '**/*.e2e.test.ts'",
@@ -16,13 +18,17 @@
   "dependencies": {
     "@fastify/swagger": "catalog:",
     "@fastify/type-provider-typebox": "catalog:",
+    "drizzle-orm": "catalog:",
     "fastify": "catalog:",
     "fastify-plugin": "catalog:",
+    "postgres": "catalog:",
     "typebox": "catalog:"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "catalog:",
     "@types/node": "catalog:",
     "@vben/tsconfig": "workspace:*",
+    "drizzle-kit": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",

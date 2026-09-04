@@ -67,6 +67,7 @@ catalog:
   '@tanstack/vue-form': ^1.33.2
   '@tanstack/vue-query': ^5.101.4
   '@tanstack/vue-store': ^0.11.0
+  '@testcontainers/postgresql': ^12.1.0
   '@tiptap/core': ^3.28.0
   '@tiptap/extension-document': ^3.28.0
   '@tiptap/extension-highlight': ^3.28.0
@@ -120,6 +121,8 @@ catalog:
   dayjs: ^1.11.21
   defu: ^6.1.7
   dotenv: ^17.4.2
+  drizzle-kit: ^0.31.10
+  drizzle-orm: ^0.45.2
   echarts: ^6.1.0
   electron: ^44.1.1
   electron-builder: ^26.15.3
@@ -166,6 +169,7 @@ catalog:
   postcss: ^8.5.22
   postcss-html: ^1.8.1
   postcss-scss: ^4.0.9
+  postgres: ^3.4.9
   publint: ^0.3.22
   qrcode: ^1.5.4
   qs: ^6.15.3
@@ -225,7 +229,10 @@ catalog:
 allowBuilds:
   '@parcel/watcher': true
   core-js: true
+  cpu-features: true
   electron-winstaller: false
   esbuild: true
   lefthook: true
+  protobufjs: true
+  ssh2: true
   vue-demi: true
