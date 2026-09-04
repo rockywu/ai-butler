@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@fastify/swagger": "catalog:",
+    "@fastify/swagger-ui": "catalog:",
     "@fastify/type-provider-typebox": "catalog:",
     "drizzle-orm": "catalog:",
     "fastify": "catalog:",

@@ -6,6 +6,7 @@ import type { AppDependencies } from './dependencies';
 import requestContextPlugin from '../framework/core/request-context.plugin';
 import errorHandlerPlugin from '../framework/http/error-handler.plugin';
 import { createHttpServer } from '../framework/http/fastify';
+import openApiUiPlugin from '../framework/http/openapi-ui.plugin';
 import openApiPlugin from '../framework/http/openapi.plugin';
 import { testConfig } from '../framework/testing/test-config';
 import { createDependencies } from './dependencies';
@@ -30,8 +31,9 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.decorate('config', config);
 
   await app.register(errorHandlerPlugin);
-  await app.register(openApiPlugin);
   await app.register(requestContextPlugin);
+  await app.register(openApiPlugin);
   await registerModules(app, createDependencies(options.dependencies));
+  await app.register(openApiUiPlugin, { enabled: config.openapiUiEnabled });
   return app;
 }
