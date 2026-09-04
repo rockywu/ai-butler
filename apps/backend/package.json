@@ -1,0 +1,30 @@
+{
+  "name": "@ai-butler/backend",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run --environment node --exclude '**/*.integration.test.ts' --exclude '**/*.e2e.test.ts'",
+    "test:e2e": "vitest run --environment node tests/shutdown.e2e.test.ts",
+    "test:integration": "vitest run --environment node src/infrastructure/database/transaction.integration.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/type-provider-typebox": "catalog:",
+    "fastify": "catalog:",
+    "fastify-plugin": "catalog:",
+    "typebox": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vben/tsconfig": "workspace:*",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
