@@ -33,6 +33,7 @@
     "dev": "turbo-run dev",
     "dev:antd": "pnpm -F @vben/web-antd run dev",
     "dev:backend": "pnpm --filter @ai-butler/backend dev",
+    "docs:backend": "pnpm --filter @ai-butler/backend docs:dev",
     "dev:desktop": "pnpm --filter @ai-butler/desktop dev",
     "dev:desktop:mac": "concurrently -k -n web,desktop -c cyan,green \"pnpm --filter @vben/web-antd dev\" \"pnpm --filter @ai-butler/desktop dev\"",
     "dev:desktop:windows": "concurrently -k -n web,desktop -c cyan,green \"pnpm --filter @vben/web-antd dev\" \"pnpm --filter @ai-butler/desktop dev\"",

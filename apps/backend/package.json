@@ -11,7 +11,10 @@
     "check:architecture": "depcruise --config .dependency-cruiser.cjs src",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch --env-file=.env src/main.ts",
+    "docs:dev": "vitepress dev documents --port 5174 --host 127.0.0.1",
+    "docs:build": "vitepress build documents",
+    "docs:preview": "vitepress preview documents --port 4174 --host 127.0.0.1",
     "start": "node dist/main.js",
     "test": "vitest run --environment node --exclude '**/*.integration.test.ts' --exclude '**/*.e2e.test.ts'",
     "test:e2e": "vitest run --environment node tests/shutdown.e2e.test.ts",
@@ -40,6 +43,7 @@
     "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vitepress": "catalog:",
     "vitest": "catalog:"
   }
 }
