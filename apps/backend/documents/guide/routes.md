@@ -88,6 +88,20 @@ curl http://127.0.0.1:3000/livez
 
 演示业务错误：抛 `AppError`，HTTP 409、`code: 2001`、`message: Probe conflict`。
 
+## 测试表 CRUD
+
+`test` 表：`id` 自增，`key` varchar(50)，`value` jsonb（混合类型）。注册位置：`src/modules/test/test.plugin.ts`。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| POST | `/test` | 创建。body：`{ key, value }` |
+| GET | `/test` | 列表 |
+| GET | `/test/:id` | 单条 |
+| PUT | `/test/:id` | 更新 `key` 和 / 或 `value` |
+| DELETE | `/test/:id` | 删除 |
+
+不存在时 HTTP 404、`code: 2101`。`value` 可以是对象、数组、字符串、数字、布尔或 `null`。
+
 ### GET `/poc/errors/system`
 
 演示未处理异常：响应 HTTP 500、`code: 5000`、`message: Internal server error`。日志会记原始错误，响应体不含堆栈或密钥。
@@ -108,6 +122,7 @@ curl http://127.0.0.1:3000/livez
 | 0 | 200 | 成功 |
 | 1000 | 400 | TypeBox / Fastify 校验失败 |
 | 2001 | 409 | 探针业务冲突（演示） |
+| 2101 | 404 | `test` 记录不存在 |
 | 5000 | 500 | 未预期系统错误 |
 | 5030 | 503 | 未就绪 |
 

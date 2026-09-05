@@ -79,12 +79,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
 
   const host = requireValue(env, 'HOST');
+  const databaseUrl = env.DATABASE_URL;
   const candidate = {
     appEnv: appEnvRaw as AppEnv,
     host,
     logLevel: logLevelRaw as LogLevel,
     openapiUiEnabled: parseOpenApiUi(env, appEnvRaw as AppEnv),
     port,
+    ...(databaseUrl === undefined || databaseUrl === '' ? {} : { databaseUrl }),
   };
 
   if (!Value.Check(AppConfigSchema, candidate)) {

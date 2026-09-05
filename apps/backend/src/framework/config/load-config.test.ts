@@ -42,6 +42,26 @@ describe('loadConfig', () => {
     }).toThrow(TypeError);
   });
 
+  it('maps DATABASE_URL without echoing the raw value on invalid input', () => {
+    const config = loadConfig({
+      ...validEnv,
+      DATABASE_URL: 'postgres://postgres:postgres@127.0.0.1:5432/postgres',
+    });
+
+    expect(config.databaseUrl).toBe(
+      'postgres://postgres:postgres@127.0.0.1:5432/postgres',
+    );
+  });
+
+  it('treats an empty DATABASE_URL as absent', () => {
+    const config = loadConfig({
+      ...validEnv,
+      DATABASE_URL: '',
+    });
+
+    expect(config.databaseUrl).toBeUndefined();
+  });
+
   it('disables OpenAPI UI by default in production', () => {
     const config = loadConfig({
       ...validEnv,

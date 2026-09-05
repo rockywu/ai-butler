@@ -23,6 +23,7 @@ describe('backend process shutdown', () => {
       env: {
         ...process.env,
         APP_ENV: 'test',
+        DATABASE_URL: '',
         HOST: '127.0.0.1',
         LOG_LEVEL: 'info',
         PORT: '0',

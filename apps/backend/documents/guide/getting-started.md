@@ -25,6 +25,7 @@ APP_ENV=development
 HOST=127.0.0.1
 PORT=3000
 LOG_LEVEL=info
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres
 ```
 
 | 变量 | 必填 | 取值 |
@@ -34,7 +35,7 @@ LOG_LEVEL=info
 | `PORT` | 是 | `0`–`65535` 的整数 |
 | `LOG_LEVEL` | 是 | `debug` / `info` / `warn` / `error` / `fatal` / `trace` / `silent` |
 | `OPENAPI_UI` | 否 | `true` / `false`。缺省时 production 关闭 UI，其余环境打开 |
-| `DATABASE_URL` | 否 | 仅 drizzle-kit 与集成测试使用，**未**进入 `AppConfig` |
+| `DATABASE_URL` | 否 | 有值则启动时建连并启用 `/test` 落库；缺省时 `/test` 走内存仓库 |
 
 缺项或非法值会在 `listen` 之前抛出 `ConfigError`，错误信息只含配置项名，不含原始值。
 

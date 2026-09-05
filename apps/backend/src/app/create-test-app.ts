@@ -27,6 +27,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}) {
     logger: options.logger ?? false,
     readinessGate: options.readinessGate,
     resources: options.resources,
+    skipDatabase: true,
   };
   return createApp(createOptions);
 }

@@ -18,6 +18,7 @@ export const LogLevelSchema = Type.Union([
 
 export const AppConfigSchema = Type.Object({
   appEnv: AppEnvSchema,
+  databaseUrl: Type.Optional(Type.String({ minLength: 1 })),
   host: Type.String({ minLength: 1 }),
   logLevel: LogLevelSchema,
   openapiUiEnabled: Type.Boolean(),
@@ -36,6 +37,7 @@ export type LogLevel =
 
 export type AppConfig = Readonly<{
   appEnv: AppEnv;
+  databaseUrl?: string;
   host: string;
   logLevel: LogLevel;
   openapiUiEnabled: boolean;

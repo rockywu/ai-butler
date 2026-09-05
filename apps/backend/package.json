@@ -18,7 +18,7 @@
     "start": "node dist/main.js",
     "test": "vitest run --environment node --exclude '**/*.integration.test.ts' --exclude '**/*.e2e.test.ts'",
     "test:e2e": "vitest run --environment node tests/shutdown.e2e.test.ts",
-    "test:integration": "vitest run --environment node src/infrastructure/database/transaction.integration.test.ts",
+    "test:integration": "vitest run --environment node src/infrastructure/database/*.integration.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

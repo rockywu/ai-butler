@@ -8,6 +8,13 @@
       "when": 1756965000000,
       "tag": "0000_poc_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757081400000,
+      "tag": "0001_test",
+      "breakpoints": true
     }
   ]
 }

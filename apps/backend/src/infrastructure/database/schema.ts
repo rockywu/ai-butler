@@ -1,4 +1,4 @@
-import { integer, pgTable, text } from 'drizzle-orm/pg-core';
+import { integer, jsonb, pgTable, text, varchar } from 'drizzle-orm/pg-core';
 
 export const accounts = pgTable('poc_accounts', {
   balance: integer().notNull(),
@@ -13,4 +13,10 @@ export const auditLogs = pgTable('poc_audit_logs', {
   id: text().primaryKey(),
 });
 
-export const schema = { accounts, auditLogs };
+export const testRecords = pgTable('test', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  key: varchar({ length: 50 }).notNull(),
+  value: jsonb().$type<unknown>().notNull(),
+});
+
+export const schema = { accounts, auditLogs, testRecords };

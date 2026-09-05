@@ -1,12 +1,10 @@
 # 数据库操作
 
-当前薄内核**不会**在启动时连接数据库。`DATABASE_URL` 没有进入 `AppConfig`，`createApp` / `bootstrap` 也不会建池。下面的 Schema、Repository 和迁移是 PoC，供集成测试与后续垂直切片复用。
-
-垂直切片计划会把 `DATABASE_URL` 纳入 `loadConfig`，并在启动期 fail-fast ping。在那之前，按本节方式在测试或脚本里手动建连。
+`DATABASE_URL` 已进入 `AppConfig`。`createApp` 在该值存在且未 `skipDatabase` 时建连、fail-fast ping，并把连接注册进 `ResourceRegistry`。`/readyz` 会跑 `select 1`。单元测试通过 `createTestApp` 跳过真实数据库，`/test` 走内存仓库。
 
 ## 技术栈
 
-- PostgreSQL 17
+- PostgreSQL 17+（本机开发可用 18.6）
 - Drizzle ORM + `postgres`（postgres.js）
 - 迁移目录：`apps/backend/migrations/`
 - 配置：`apps/backend/drizzle.config.ts`
@@ -17,8 +15,9 @@
 
 | 表 | 列 | 说明 |
 | --- | --- | --- |
-| `poc_accounts` | `id` text PK，`balance` integer NOT NULL | 账户 |
-| `poc_audit_logs` | `id` text PK，`account_id` → `poc_accounts.id`，`event` text NOT NULL | 审计 |
+| `poc_accounts` | `id` text PK，`balance` integer NOT NULL | 账户（PoC） |
+| `poc_audit_logs` | `id` text PK，`account_id` → `poc_accounts.id`，`event` text NOT NULL | 审计（PoC） |
+| `test` | `id` integer 自增 PK，`key` varchar(50)，`value` jsonb | 测试 CRUD |
 
 对应 SQL 在 `migrations/0000_poc_accounts.sql`。
 
