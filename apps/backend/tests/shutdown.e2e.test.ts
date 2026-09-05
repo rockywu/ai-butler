@@ -20,7 +20,13 @@ describe('backend process shutdown', () => {
   it('exits cleanly after SIGTERM', async () => {
     child = spawn(process.execPath, ['dist/main.js'], {
       cwd: backendRoot,
-      env: { ...process.env, PORT: '0' },
+      env: {
+        ...process.env,
+        APP_ENV: 'test',
+        HOST: '127.0.0.1',
+        LOG_LEVEL: 'info',
+        PORT: '0',
+      },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
