@@ -1,16 +1,26 @@
 import process from 'node:process';
 
 import { createApp } from './app/create-app';
+import { loadConfig } from './framework/config/load-config';
+import { createAppShutdown } from './framework/core/app-shutdown';
+import { createReadinessGate } from './framework/core/readiness';
 import { ResourceRegistry } from './framework/core/resource-registry';
-import { createShutdown } from './framework/core/shutdown';
+import { createLogger } from './framework/observability/logger';
 
-const app = await createApp({ logger: true });
+const config = loadConfig(process.env);
+const logger = createLogger(config);
+const readinessGate = createReadinessGate();
 const resources = new ResourceRegistry();
-resources.register('fastify', () => app.close());
+const app = await createApp({
+  config,
+  logger,
+  readinessGate,
+  resources,
+});
 
-const shutdown = createShutdown({
-  close: () => resources.closeAll(),
-  timeoutMs: 10_000,
+const shutdown = createAppShutdown({
+  readinessGate,
+  resources,
 });
 
 async function handleSignal(signal: NodeJS.Signals): Promise<void> {
@@ -28,6 +38,6 @@ process.once('SIGINT', () => void handleSignal('SIGINT'));
 process.once('SIGTERM', () => void handleSignal('SIGTERM'));
 
 await app.listen({
-  host: '0.0.0.0',
-  port: Number.parseInt(process.env.PORT ?? '3000', 10),
+  host: config.host,
+  port: config.port,
 });

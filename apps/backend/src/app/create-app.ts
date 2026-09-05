@@ -50,5 +50,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerModules(app, createDependencies(options.dependencies));
   await app.register(healthPlugin, { checkers, readinessGate });
   await app.register(openApiUiPlugin, { enabled: config.openapiUiEnabled });
+
+  resources.register('fastify', () => app.close());
   return app;
 }

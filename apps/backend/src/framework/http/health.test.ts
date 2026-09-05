@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../app/create-app';
 import { createReadinessGate } from '../core/readiness';
+import { ResourceRegistry } from '../core/resource-registry';
 import { testConfig } from '../testing/test-config';
 
 describe('health checks', () => {
@@ -93,5 +94,31 @@ describe('health checks', () => {
       data: null,
       message: 'not ready',
     });
+  });
+
+  it('returns the 5030 envelope for a shared gate after markNotReady', async () => {
+    const readinessGate = createReadinessGate();
+    const resources = new ResourceRegistry();
+    app = await createApp({
+      config: testConfig(),
+      logger: false,
+      readinessGate,
+      resources,
+    });
+
+    expect(app.resources).toBe(resources);
+    expect(app.readinessGate).toBe(readinessGate);
+
+    readinessGate.markNotReady();
+    const after = await app.inject({ method: 'GET', url: '/readyz' });
+    const live = await app.inject({ method: 'GET', url: '/livez' });
+
+    expect(after.statusCode).toBe(503);
+    expect(after.json()).toEqual({
+      code: 5030,
+      data: null,
+      message: 'not ready',
+    });
+    expect(live.statusCode).toBe(200);
   });
 });
